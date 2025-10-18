@@ -1,0 +1,199 @@
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+from neuron import neuron
+
+class mlp:
+    def __init__(self, hidden_layer_size):
+
+        
+        self.input = []
+        self.hidden_layer_size = hidden_layer_size
+        self.layer_w = []
+        self.output = []
+    
+        self.epoch__max = 0
+        self.epochs = [] #list of epochs to display in a seaborn plot
+
+        self.ouput_errors = [] #list of errors at the last layer of nn
+        self.rms_error= [] #list of total error in each epoch
+        self.cee = [] #cross-entropy-error
+
+        self.total_neuron_error = [] #list of list of errors each neuron have (one error per sample)
+
+        # --- initialize layers ---
+    
+        self.layers = [] #list of al layers
+        self.ouput_neurons = [] #output layer [final result]
+
+
+    #input change one per epoch or one per frame
+    def input_change(self,input):
+        self.input = input
+
+    def init_layer_weights(self,input_sample,target_sample):
+
+        layer_input_size = len(input_sample) #how many weights each neuron have (it depend on which layer)
+
+        for s in self.hidden_layer_size: #for each layer
+            layer_neurons = [] #single layer
+
+            for i in range(s):
+                layer_neurons.append(neuron(layer_input_size))
+
+            self.layers.append(layer_neurons)
+            layer_input_size = s
+
+        for i in range(len(target_sample)):
+            self.ouput_neurons.append(neuron(layer_input_size))
+        
+        self.layers.append(self.ouput_neurons)
+
+
+    def disp(self):
+        
+        prev_input = self.input
+
+        for l in self.layers:
+            print("layer++")
+            input = []
+            for n in l:
+                print(n.value(prev_input))
+                input.append(n.value(prev_input))
+            prev_input = []
+            prev_input = input
+
+    def softmax(self):
+
+        z = np.array(self.output)
+        exp_z = np.exp(z-np.max(z))
+
+        return exp_z/np.sum(exp_z)
+
+    def CrossEntropyError(self,selected_output):
+        return -math.log(selected_output)
+    
+    def PlotEntropyError(self):
+        plt.plot(self.epochs,self.cee)
+        plt.show()
+
+    def Backpropagate(self):
+        
+        a = 0.01#learning rate
+    
+        layer_index = len(self.layers)
+        full_neuron_errors = [] #list of n_error for each layer
+
+        for l in reversed(self.layers): 
+
+            n_error = [] #list of errors (each error for neuron) in a layer
+
+            layer_index -= 1
+
+            if layer_index == len(self.layers) - 1:
+                for i in range(len(l)):
+                    l[i].error = self.ouput_errors[i]
+                    n_error.append(l[i].error)
+            
+            else:
+
+                #for each neuron we compute neuron_error 
+                for index,neuron in enumerate(l):   
+                    
+                    nerr_sum = 0
+                    #for each neuron in next layer (with knows error)
+                    for n in self.layers[layer_index + 1]:    
+                        nerr_sum = nerr_sum + n.error * n.weights[index]
+                    
+                    neuron.error = nerr_sum * neuron.reLu_dv(neuron.weights_sum)
+                    n_error.append(neuron.error)
+
+                    #update the weights of neuron 
+                    for i in range(len(neuron.weights)):
+                        neuron.weights[i] = neuron.weights[i] - a * neuron.error
+                    neuron.bias = neuron.bias - a * neuron.error
+                    
+            
+            full_neuron_errors.append(n_error)
+
+    def rms(self,output,target):
+        sum = 0
+        for i in range(len(output)):
+            sum = (output[i] - target[i])*(output[i] - target[i])
+
+        return sum/len(output)
+    
+    def predict(self):
+        
+        prev_input = self.input
+
+        for l in self.layers:
+        
+            input = []
+            for n in l:
+                input.append(n.value(prev_input))
+            prev_input = input
+
+        self.output = prev_input
+
+    #delete it later 
+        print(self.softmax())
+    
+
+    def Train(self,input_data,target_data,max_epoch):
+        
+        self.init_layer_weights(input_data[0],target_data[0])
+        self.epoch__max = max_epoch
+
+        epoch = 0
+
+        while epoch < self.epoch__max:
+            
+            cee_sample = []
+            err_sample = []
+            out_err = [] #list of err_sample
+
+            for i in range(len(input_data)-1):
+
+                self.target = target_data[i]
+                self.input = input_data[i]
+
+                self.predict()
+
+                for i in range(len(self.target)):
+                    err_sample.append(self.output[i] - self.target[i])
+                
+                out_err.append(err_sample)
+                self.rms_error.append(self.rms(self.output,self.target))
+                
+                self.epochs.append(epoch)
+                epoch = epoch + 1
+
+
+                self.ouput_errors = []
+
+            for i in range(len(self.target)):
+                self.ouput_errors.append(sum(out_err[i])/len(out_err[i]))
+            
+            #correlation error 
+            cee_sample.append(self.ouput_errors[np.argmax(self.target)])
+
+            self.Backpropagate()
+            self.cee.append((sum(cee_sample)/len(cee_sample)))
+
+
+       
+
+
+        
+
+
+    
+        
+
+
+
+
+
+    
