@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mlp import mlp
 from hand import HandDetect
 from hand import cv2
+import math
 import os
 import time
 import sys
@@ -43,9 +44,11 @@ def get_landmarks_input(data_1):
             y_vals[i] = y_vals[i] - y_wrist
             x_vals[i] = x_vals[i] - x_wrist
         
+
         for i in range(len(x_vals)):
-            result_input.append(x_vals[i])
-            result_input.append(y_vals[i])#
+            # result_input.append(x_vals[i])
+            # result_input.append(y_vals[i])
+            result_input.append(math.sqrt(x_vals[i]*x_vals[i] + y_vals[i]*y_vals[i]))
 
     return result_input
 
@@ -80,24 +83,33 @@ def create_data_set():
 
     return Data_set
 
-NET = mlp([64,32])
-
 Data_set = create_data_set()
 
 input = Data_set[0]
 target = Data_set[1]
 
-for t in input:
-    print(len(t))
+# for t in input:
+#     print(len(t))
 
 
+# sys.exit()
+
+errors = []
+for i in range(6):
+
+    NET = mlp([64,32])
+
+    NET.Train(input,target,200)
+    errors.append(NET.final_net_error)
+    plt.figure()
+    sns.lineplot(x = NET.epochs,y=NET.cee)
 
 
-sys.exit()
+print("final errors:")
+for i in range(len(errors)):
+    print(f'{i} errors : {errors[i]}')
+plt.show()
 
-NET.Train(input,target,2000)
-
-# NET.PlotEntropyError()
 
 while True:
 

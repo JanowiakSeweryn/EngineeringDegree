@@ -12,6 +12,8 @@ class mlp:
         self.hidden_layer_size = hidden_layer_size
         self.layer_w = []
         self.output = []
+        self.learning_rate = 0.05
+        self.final_net_error = 0
     
         self.epoch__max = 0
         self.epochs = [] #list of epochs to display in a seaborn plot
@@ -64,9 +66,9 @@ class mlp:
             prev_input = []
             prev_input = input
 
-    def softmax(self):
+    def softmax(self,array):
 
-        z = np.array(self.output)
+        z = np.array(array)
         exp_z = np.exp(z-np.max(z))
 
         return exp_z/np.sum(exp_z)
@@ -80,7 +82,7 @@ class mlp:
 
     def Backpropagate(self):
         
-        a = 0.01#learning rate
+        a = self.learning_rate#learning rate
     
         layer_index = len(self.layers)
         full_neuron_errors = [] #list of n_error for each layer
@@ -138,9 +140,10 @@ class mlp:
         self.output = prev_input
 
     #delete it later 
-        print(self.softmax())
+        print(self.softmax(self.output))
     
 
+    #to do:
     def Train(self,input_data,target_data,max_epoch):
         
         self.init_layer_weights(input_data[0],target_data[0])
@@ -161,15 +164,12 @@ class mlp:
 
                 self.predict()
 
+
                 for i in range(len(self.target)):
-                    err_sample.append(self.output[i] - self.target[i])
+                    err_sample.append(self.softmax(self.output)[i] - self.target[i])
                 
                 out_err.append(err_sample)
                 self.rms_error.append(self.rms(self.output,self.target))
-                
-                self.epochs.append(epoch)
-                epoch = epoch + 1
-
 
                 self.ouput_errors = []
 
@@ -180,7 +180,12 @@ class mlp:
             cee_sample.append(self.ouput_errors[np.argmax(self.target)])
 
             self.Backpropagate()
-            self.cee.append((sum(cee_sample)/len(cee_sample)))
+            self.cee.append((-sum(cee_sample)/len(cee_sample)))
+
+            self.epochs.append(epoch)
+            epoch = epoch + 1
+        
+        self.final_net_error = self.cee[-1]
 
 
        
