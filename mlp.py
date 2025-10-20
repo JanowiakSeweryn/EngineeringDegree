@@ -12,15 +12,21 @@ class mlp:
         self.hidden_layer_size = hidden_layer_size
         self.layer_w = []
         self.output = []
-        self.learning_rate = 0.05
+        self.presoftmax_output = []
+        self.learning_rate = 0.005
+        self.initial_learnig_rate = 0.1
+
         self.final_net_error = 0
-    
+
+        self.learning_rate_step = [] #visual the changes of learning rate
+
         self.epoch__max = 0
         self.epochs = [] #list of epochs to display in a seaborn plot
 
         self.ouput_errors = [] #list of errors at the last layer of nn
         self.rms_error= [] #list of total error in each epoch
-        self.cee = [] #cross-entropy-error
+        
+        self.Loss = [] #cross-entropy-error
 
         self.total_neuron_error = [] #list of list of errors each neuron have (one error per sample)
 
@@ -54,17 +60,21 @@ class mlp:
 
 
     def disp(self):
-        
-        prev_input = self.input
+        # for l in self.layers:
+        #     for n in l:
+        #         print(n.inputs)
 
-        for l in self.layers:
-            print("layer++")
-            input = []
-            for n in l:
-                print(n.value(prev_input))
-                input.append(n.value(prev_input))
-            prev_input = []
-            prev_input = input
+        print(self.softmax(self.output))
+
+    def sigmoid(self,a):
+        p1 = 0.2
+        p2 = self.epoch__max*0.55
+        return 1/(1+np.exp(p1*(a - p2)))
+    
+    def CrossEntropyError(self,output, target):
+        eps = 1e-15
+        output = np.clip(output, eps, 1 - eps)
+        return -np.sum(target * np.log((self.softmax(output))))
 
     def softmax(self,array):
 
@@ -73,16 +83,15 @@ class mlp:
 
         return exp_z/np.sum(exp_z)
 
-    def CrossEntropyError(self,selected_output):
-        return -math.log(selected_output)
+
     
     def PlotEntropyError(self):
-        plt.plot(self.epochs,self.cee)
+        plt.plot(self.epochs,self.Loss)
         plt.show()
 
     def Backpropagate(self):
         
-        a = self.learning_rate#learning rate
+        a = self.learning_rate #learning rate
     
         layer_index = len(self.layers)
         full_neuron_errors = [] #list of n_error for each layer
@@ -94,9 +103,16 @@ class mlp:
             layer_index -= 1
 
             if layer_index == len(self.layers) - 1:
-                for i in range(len(l)):
-                    l[i].error = self.ouput_errors[i]
-                    n_error.append(l[i].error)
+                for i ,neuron in enumerate(l):
+                    neuron.error = self.ouput_errors[i]
+
+                    n_error.append(neuron.error)
+
+                        #update the weights of neuron 
+                    for j in range(len(neuron.weights)):
+                        neuron.weights[j] -=  a * neuron.error * neuron.inputs[j]
+                    neuron.bias -= a * neuron.error 
+                
             
             else:
 
@@ -112,10 +128,9 @@ class mlp:
                     n_error.append(neuron.error)
 
                     #update the weights of neuron 
-                    for i in range(len(neuron.weights)):
-                        neuron.weights[i] = neuron.weights[i] - a * neuron.error
-                    neuron.bias = neuron.bias - a * neuron.error
-                    
+                    for j in range(len(neuron.weights)):
+                        neuron.weights[j] -=  a * neuron.error * neuron.inputs[j]
+                    neuron.bias -= a * neuron.error 
             
             full_neuron_errors.append(n_error)
 
@@ -130,62 +145,72 @@ class mlp:
         
         prev_input = self.input
 
-        for l in self.layers:
+        for i in range(len(self.layers)):
         
             input = []
-            for n in l:
-                input.append(n.value(prev_input))
-            prev_input = input
-
+            if(i != len(self.layers) - 1):
+                for n in self.layers[i]:
+                    input.append(n.value(prev_input))
+                prev_input = input
+            else:
+                for n in self.layers[i]:
+                    input.append(n.get_sum(prev_input))
+                prev_input = input
+        
         self.output = prev_input
+        # print(self.softmax(self.output))
 
-    #delete it later 
-        print(self.softmax(self.output))
-    
-
-    #to do:
     def Train(self,input_data,target_data,max_epoch):
         
         self.init_layer_weights(input_data[0],target_data[0])
         self.epoch__max = max_epoch
-
         epoch = 0
 
         while epoch < self.epoch__max:
             
-            cee_sample = []
-            err_sample = []
+            rms_sample = []
             out_err = [] #list of err_sample
+            cee_sample = []
+            self.ouput_errors = []
 
-            for i in range(len(input_data)-1):
-
+            for i in range(len(input_data)):
+                
+    
+                err_sample = []
+                rms_sample = []
+            
                 self.target = target_data[i]
                 self.input = input_data[i]
 
                 self.predict()
 
 
-                for i in range(len(self.target)):
-                    err_sample.append(self.softmax(self.output)[i] - self.target[i])
-                
+                for j in range(len(self.target)):
+                    err_sample.append(self.output[j] - self.target[j])
+
+                cee_sample.append(self.CrossEntropyError(self.output,self.target))
                 out_err.append(err_sample)
-                self.rms_error.append(self.rms(self.output,self.target))
 
-                self.ouput_errors = []
+                rms_sample.append(self.rms(self.output,self.target))
 
-            for i in range(len(self.target)):
-                self.ouput_errors.append(sum(out_err[i])/len(out_err[i]))
-            
-            #correlation error 
-            cee_sample.append(self.ouput_errors[np.argmax(self.target)])
+            # for i in range(len(self.target)):
+            #     self.ouput_errors.append(sum(out_err[i])/len(out_err[i]))
 
-            self.Backpropagate()
-            self.cee.append((-sum(cee_sample)/len(cee_sample)))
+            self.ouput_errors = np.mean(out_err, axis=0)
 
             self.epochs.append(epoch)
+
+            self.learning_rate_step.append(self.sigmoid(epoch))
+            # self.learning_rate = self.sigmoid(epoch)*self.initial_learnig_rate
             epoch = epoch + 1
+
+            self.Backpropagate()
+            self.Loss.append((sum(cee_sample)/len(cee_sample)))
+            self.rms_error.append(sum(rms_sample)/len(rms_sample))
+
+            print(f'{self.ouput_errors} epoch: {epoch}')
         
-        self.final_net_error = self.cee[-1]
+        self.final_net_error = self.Loss[len(self.Loss)-1]
 
 
        

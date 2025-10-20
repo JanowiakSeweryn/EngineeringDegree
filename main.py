@@ -1,4 +1,6 @@
 import seaborn as sns
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from mlp import mlp
 from hand import HandDetect
@@ -45,7 +47,7 @@ def get_landmarks_input(data_1):
             x_vals[i] = x_vals[i] - x_wrist
         
 
-        for i in range(len(x_vals)):
+        for i in range(21):
             # result_input.append(x_vals[i])
             # result_input.append(y_vals[i])
             result_input.append(math.sqrt(x_vals[i]*x_vals[i] + y_vals[i]*y_vals[i]))
@@ -88,27 +90,20 @@ Data_set = create_data_set()
 input = Data_set[0]
 target = Data_set[1]
 
-# for t in input:
-#     print(len(t))
-
-
-# sys.exit()
-
 errors = []
-for i in range(6):
+for i in range(1):
 
-    NET = mlp([64,32])
-
-    NET.Train(input,target,200)
+    NET = mlp([42,32,15])
+    NET.Train(Data_set[0],Data_set[1],200)
     errors.append(NET.final_net_error)
     plt.figure()
-    sns.lineplot(x = NET.epochs,y=NET.cee)
-
+    sns.lineplot(x = NET.epochs,y=NET.Loss)
 
 print("final errors:")
 for i in range(len(errors)):
     print(f'{i} errors : {errors[i]}')
-plt.show()
+
+plt.savefig("plot.png")
 
 
 while True:
@@ -129,8 +124,11 @@ while True:
     if len(data_1) > 0:
         NET.input_change(get_landmarks_input(data_1))
         NET.predict()
+        NET.disp() #displays softmax of output
 
 cap.release()
 cv2.destroyAllWindows()
+
+# plt.show()
 
 print("end")
