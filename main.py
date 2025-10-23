@@ -2,7 +2,11 @@ import seaborn as sns
 import matplotlib
 # matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from mlp_batch import mlp
+
+#one of the following 
+from torch_nn import mlp 
+# from mlp import mlp
+
 from hand import HandDetect
 from hand import cv2
 import math
@@ -11,6 +15,7 @@ import sys
 
 from get_data import get_landmarks_input
 from get_data import read_json
+
 
 import json 
 
@@ -32,7 +37,7 @@ data_1 = []
 input,target = read_json()
 
 NET = mlp([45,30])
-NET.Train(input,target,100)
+NET.Train(input,target,150)
  
 
 while True:

@@ -1,3 +1,5 @@
+#my own custom 
+
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
@@ -34,6 +36,8 @@ class mlp:
     
         self.layers = [] #list of al layers
         self.ouput_neurons = [] #output layer [final result]
+
+        self.batch_size = 200
 
 
     #input change one per epoch or one per frame
@@ -165,15 +169,19 @@ class mlp:
         self.init_layer_weights(input_data[0],target_data[0])
         self.epoch__max = max_epoch
         epoch = 0
+        iter = 0
 
         while epoch < self.epoch__max:
             
             
-            for i in range(len(input_data)):
+            for b in range(self.batch_size):
+
+                if iter >= len(input_data): iter = 0
+
                 loss = []
                 self.ouput_errors = []
-                self.target = target_data[i]
-                self.input = input_data[i]
+                self.target = target_data[iter]
+                self.input = input_data[iter]
 
                 self.predict()
 
@@ -182,6 +190,7 @@ class mlp:
 
                 self.Backpropagate()
                 loss.append(self.CrossEntropyError(self.output,self.target))
+                iter += 1
             
             self.epochs.append(epoch)
             epoch = epoch + 1
@@ -190,7 +199,7 @@ class mlp:
 
             print(f'{self.ouput_errors} \tCE:{loss[-1]} \tepoch: {epoch}')
         
-        self.final_net_error = self.Loss[len(self.Loss)-1]
+        self.final_net_error = self.Loss[-1]
 
 
        
