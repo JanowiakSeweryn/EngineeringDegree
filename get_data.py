@@ -1,0 +1,115 @@
+from hand import HandDetect
+from hand import cv2
+import math
+import json
+import os
+import random
+
+
+detector = HandDetect(False,2,0.5,0.5)
+
+#main list of gestures
+
+GESTURES = [
+    "fist_closed",
+    "fist_open"
+]
+
+
+def get_landmarks_input(data_1):
+
+    result_input = []
+
+    if len(data_1) > 0:
+        index_val = [pt[0] for pt in data_1]
+        x_vals = [pt[1] for pt in data_1]  
+        y_vals = [pt[2] for pt in data_1]  
+
+        ymax = max(y_vals)
+
+        for i, val in enumerate(y_vals):
+            #reversing the y-axis to easy to analize
+            y_vals[i] = (ymax-y_vals[i])
+            #normalize the [0] value (wrist) to be begging of y and x axis
+            
+        y_wrist = y_vals[0]
+        x_wrist = x_vals[0]
+        for i,val in enumerate(y_vals):
+            y_vals[i] = y_vals[i] - y_wrist
+            x_vals[i] = x_vals[i] - x_wrist
+        
+
+        for i in range(21):
+            # result_input.append(x_vals[i])
+            # result_input.append(y_vals[i])
+            result_input.append(math.sqrt(x_vals[i]*x_vals[i] + y_vals[i]*y_vals[i]))
+
+    return result_input
+
+
+def get_data_png(filename):
+
+    image = cv2.imread(filename)
+    image = detector.findfinger(image)
+    data = detector.handlm_Pos()
+
+    return get_landmarks_input(data)
+
+
+def create_data_set():
+
+    current_dir = os.getcwd()
+
+    input = []
+    target = []
+
+    target_gesture = []
+    hand_gestures_number = 2
+    gesture_index = 0
+
+    #initialize all targets as list [0,0,0...number of gestures]
+    for i in range(hand_gestures_number):
+        target_gesture.append(0)
+    
+    #here add new gesture
+    for gesture in GESTURES:
+
+        target_gesture[gesture_index] = 1 # we 
+        print(target_gesture)
+
+        for file in os.listdir(f'{current_dir}/{gesture}'):
+            input.append(get_data_png(f'{gesture}/{file}'))
+            target.append(target_gesture.copy()) #
+
+        target_gesture[gesture_index] = 0
+        gesture_index += 1
+
+        print(target[0])
+
+    #shuffle the data
+    combined = list(zip(input, target))
+
+    random.shuffle(combined)
+
+    input, target = zip(*combined)
+    Data = {
+        "input": input ,
+        "target": target,
+    }
+
+    with open("data_set.json","w") as f:
+        json.dump(Data,f,indent=4)
+
+    
+def read_json():
+    with open("data_set.json","r") as f:
+        data = json.load(f)
+    
+    input = data["input"]
+    target = data["target"]
+
+
+
+    return input, target
+
+# create_data_set() #update add new hand gesture

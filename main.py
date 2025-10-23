@@ -1,14 +1,18 @@
 import seaborn as sns
 import matplotlib
-matplotlib.use('Agg')
+# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from mlp import mlp
+from mlp_batch import mlp
 from hand import HandDetect
 from hand import cv2
 import math
-import os
 import time
 import sys
+
+from get_data import get_landmarks_input
+from get_data import read_json
+
+import json 
 
 
 sns.set_theme()
@@ -24,87 +28,12 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT,WIN_HEIGHT)
 detector = HandDetect(False,2,0.5,0.5)
 data_1 = []
 
-def get_landmarks_input(data_1):
 
-    result_input = []
+input,target = read_json()
 
-    if len(data_1) > 0:
-        index_val = [pt[0] for pt in data_1]
-        x_vals = [pt[1] for pt in data_1]  
-        y_vals = [pt[2] for pt in data_1]  
-
-        ymax = max(y_vals)
-
-        for i, val in enumerate(y_vals):
-            #reversing the y-axis to easy to analize
-            y_vals[i] = (ymax-y_vals[i])
-            #normalize the [0] value (wrist) to be begging of y and x axis
-            
-        y_wrist = y_vals[0]
-        x_wrist = x_vals[0]
-        for i,val in enumerate(y_vals):
-            y_vals[i] = y_vals[i] - y_wrist
-            x_vals[i] = x_vals[i] - x_wrist
-        
-
-        for i in range(21):
-            # result_input.append(x_vals[i])
-            # result_input.append(y_vals[i])
-            result_input.append(math.sqrt(x_vals[i]*x_vals[i] + y_vals[i]*y_vals[i]))
-
-    return result_input
-
-
-def get_data_png(filename):
-
-    image = cv2.imread(filename)
-    image = detector.findfinger(image)
-    data = detector.handlm_Pos()
-
-    return get_landmarks_input(data)
-
-
-
-def create_data_set():
-
-    current_dir = os.getcwd()
-
-    input = []
-    target = []
-
-    Data_set = [input,target]
-
-    for file in os.listdir(f'{current_dir}/fist_closed'):
-        
-        input.append(get_data_png(f'fist_closed/{file}')), target.append([0,1])
-        Data_set.append([input,target])
-
-    for file in os.listdir(f'{current_dir}/fist_open'):
-        input.append(get_data_png(f'fist_open/{file}')), target.append([1,0])
-        Data_set.append([input,target])
-
-    return Data_set
-
-Data_set = create_data_set()
-
-input = Data_set[0]
-target = Data_set[1]
-
-errors = []
-for i in range(1):
-
-    NET = mlp([42,32,15])
-    NET.Train(Data_set[0],Data_set[1],200)
-    errors.append(NET.final_net_error)
-    plt.figure()
-    sns.lineplot(x = NET.epochs,y=NET.Loss)
-
-print("final errors:")
-for i in range(len(errors)):
-    print(f'{i} errors : {errors[i]}')
-
-plt.savefig("plot.png")
-
+NET = mlp([45,30])
+NET.Train(input,target,100)
+ 
 
 while True:
 
@@ -128,7 +57,5 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
-
-# plt.show()
 
 print("end")
