@@ -1,27 +1,17 @@
-import seaborn as sns
-import matplotlib
-# matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+#uncomment one of the following :
+# from torch_nn import mlp #use torch 
+from mlp_custom import mlp #use my own neural network
 
-#one of the following 
-from torch_nn import mlp 
-# from mlp import mlp
-
+#media pipe class to detect hand
 from hand import HandDetect
 from hand import cv2
-import math
-import time
-import sys
 
-from get_data import get_landmarks_input
+
+from get_data import get_landmarks_input 
 from get_data import read_json
 
-
-import json 
-
-
-sns.set_theme()
-
+#gestures name
+from get_data import GESTURES 
 
 WIN_WIDTH = 1920
 WIN_HEIGHT = 1080
@@ -58,7 +48,10 @@ while True:
     if len(data_1) > 0:
         NET.input_change(get_landmarks_input(data_1))
         NET.predict()
-        NET.disp() #displays softmax of output
+
+        NET.disp() #displays softmax of full output for all gestures 
+
+        # print(GESTURES[NET.gesture_detected_index]) #displays name of the gesture
 
 cap.release()
 cv2.destroyAllWindows()

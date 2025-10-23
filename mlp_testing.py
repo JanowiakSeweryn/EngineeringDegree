@@ -1,8 +1,13 @@
-from mlp import mlp
+#uncomment one of the following :
+
+from torch_nn import mlp #use torch 
+# from mlp_custom import mlp #use my own neural network
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 from get_data import read_json
+
 
 
 input,target = read_json()

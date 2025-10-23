@@ -9,21 +9,20 @@ class neuron:
         self.inputs = []
         self.weights = [] 
         self.weights_sum = 0
-        self.bias = random.uniform(-0.2, 0.2) * np.sqrt(2/input_size)
+        self.bias = 0.02
         self.error = 0
 
-
         for i in range(input_size):
-            self.weights.append(random.uniform(-0.2,0.2) * np.sqrt(2/input_size))
+            self.weights.append(random.uniform(-1.5,1.5) * np.sqrt(2/input_size))
 
     
     def reLu(self,wsum):
-        if wsum < 0: return 0
+        if wsum < 0: return 0.02
         else: return wsum 
     
     def reLu_dv(self,wsum):
         if(wsum > 0 ): return 1
-        else : return 0
+        else : return 0.02
 
     def value(self,input):
         sum = self.bias

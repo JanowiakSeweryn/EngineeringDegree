@@ -2,15 +2,18 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-
+import numpy as np
 
 class mlp(nn.Module):
     def __init__(self, hidden_sizes):
         super(mlp, self).__init__()
-
+        
+        self.gesture_detected_index = 0
         self.output_size = 0
         self.hidden_sizes = hidden_sizes
         self.input_size = 0
+        self.final_net_error = 0
+
         self.epochs = []
         self.loss_history = []
 
@@ -60,6 +63,8 @@ class mlp(nn.Module):
 
             self.epochs.append(epoch)
             self.loss_history.append(loss.item())
+        self.Loss = self.loss_history
+        self.final_net_error = self.Loss[-1]
             
     def input_change(self, input):
         self.input = input
@@ -78,6 +83,7 @@ class mlp(nn.Module):
             outputs = self(input_tensor)
             probs = F.softmax(outputs, dim=1)
         # print(probs.squeeze(0).tolist())
+        self.gesture_detected_index = np.argmax(probs.squeeze(0).tolist())
         return probs
 
 

@@ -33,7 +33,7 @@ while(True):
         if(frame_number < 100):
             frame_number += 1
             print(frame_number)
-            filename = f'{current_dir}/fist_open/fo_{frame_number}.png'
+            filename = f'{current_dir}/rand_gest/fo_{frame_number}.png'
             cv2.imwrite(filename,frame)
         else:
             break

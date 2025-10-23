@@ -1,3 +1,7 @@
+#creates data set for single hand detection 
+#the file uses the create_data_set()  funtion to create data sets:
+#data sets have 2 outputs: targets (array to neural network for classification problem)
+
 from hand import HandDetect
 from hand import cv2
 import math
@@ -6,14 +10,20 @@ import os
 import random
 
 
-detector = HandDetect(False,2,0.5,0.5)
+#every time when adding/removing gesture add set to true
+#after that set to False if you want fast way of runnng other programs
+Update_Data_Set = False
 
 #main list of gestures
 
 GESTURES = [
+    "fist_open",
     "fist_closed",
-    "fist_open"
+    "rand_gest"
 ]
+
+
+detector = HandDetect(False,2,0.5,0.5)
 
 
 def get_landmarks_input(data_1):
@@ -64,11 +74,11 @@ def create_data_set():
     target = []
 
     target_gesture = []
-    hand_gestures_number = 2
+
     gesture_index = 0
 
     #initialize all targets as list [0,0,0...number of gestures]
-    for i in range(hand_gestures_number):
+    for i in range(len(GESTURES)):
         target_gesture.append(0)
     
     #here add new gesture
@@ -112,4 +122,6 @@ def read_json():
 
     return input, target
 
-# create_data_set() #update add new hand gesture
+#UPDATE DATA SET 
+if(Update_Data_Set):
+    create_data_set() 
