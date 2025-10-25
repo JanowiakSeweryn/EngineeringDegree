@@ -18,7 +18,6 @@ class mlp(nn.Module):
         self.loss_history = []
 
         self.input = []
-
     
     def create_layers(self):
         layers = []
@@ -29,7 +28,6 @@ class mlp(nn.Module):
             layers.append(nn.ReLU())
             in_size = h
 
-        # Final layer
         layers.append(nn.Linear(in_size, self.output_size))
         self.net = nn.Sequential(*layers)
 
@@ -37,11 +35,12 @@ class mlp(nn.Module):
         return self.net(x)
 
     def Train(self, input_data, target, max_epoch=100, lr=0.01):
-        # Create layers right away
+
         self.input_size = len(input_data[0])
         self.output_size = len(target[0])
-
-        self.create_layers()
+        
+        if self.input_size != 0:
+            self.create_layers()
 
 
         criterion = nn.CrossEntropyLoss()

@@ -12,19 +12,20 @@ import random
 
 #every time when adding/removing gesture add set to true
 #after that set to False if you want fast way of runnng other programs
-Update_Data_Set = False
+Update_Data_Set = True
 
 #main list of gestures
 
 GESTURES = [
     "fist_open",
     "fist_closed",
-    "rand_gest"
+    "fist_flipped",
+    "german_3" ,
+    "rand_gest" 
 ]
 
 
 detector = HandDetect(False,2,0.5,0.5)
-
 
 def get_landmarks_input(data_1):
 
@@ -54,8 +55,9 @@ def get_landmarks_input(data_1):
             # result_input.append(y_vals[i])
             result_input.append(math.sqrt(x_vals[i]*x_vals[i] + y_vals[i]*y_vals[i]))
 
-    return result_input
+        return result_input
 
+    else: return False
 
 def get_data_png(filename):
 
@@ -83,18 +85,20 @@ def create_data_set():
     
     #here add new gesture
     for gesture in GESTURES:
-
-        target_gesture[gesture_index] = 1 # we 
-        print(target_gesture)
+        
+        target_gesture[gesture_index] = 1 
 
         for file in os.listdir(f'{current_dir}/{gesture}'):
-            input.append(get_data_png(f'{gesture}/{file}'))
-            target.append(target_gesture.copy()) #
+            if get_data_png(f'{gesture}/{file}'):
+                input.append(get_data_png(f'{gesture}/{file}'))
+                target.append(target_gesture.copy()) #
+
+        print(f"gesture {GESTURES[gesture_index]} added")
 
         target_gesture[gesture_index] = 0
         gesture_index += 1
 
-        print(target[0])
+
 
     #shuffle the data
     combined = list(zip(input, target))
@@ -117,7 +121,6 @@ def read_json():
     
     input = data["input"]
     target = data["target"]
-
 
 
     return input, target

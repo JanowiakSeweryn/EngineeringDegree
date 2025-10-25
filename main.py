@@ -1,6 +1,6 @@
 #uncomment one of the following :
-# from torch_nn import mlp #use torch 
-from mlp_custom import mlp #use my own neural network
+from torch_nn import mlp #use torch 
+# from mlp_custom import mlp #use my own neural network
 
 #media pipe class to detect hand
 from hand import HandDetect
@@ -26,7 +26,7 @@ data_1 = []
 
 input,target = read_json()
 
-NET = mlp([45,30])
+NET = mlp([40,32])
 NET.Train(input,target,150)
  
 
@@ -49,9 +49,9 @@ while True:
         NET.input_change(get_landmarks_input(data_1))
         NET.predict()
 
-        NET.disp() #displays softmax of full output for all gestures 
+        # NET.disp() #displays softmax of full output for all gestures 
 
-        # print(GESTURES[NET.gesture_detected_index]) #displays name of the gesture
+        print(GESTURES[NET.gesture_detected_index]) #displays name of the gesture
 
 cap.release()
 cv2.destroyAllWindows()

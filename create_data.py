@@ -1,3 +1,14 @@
+#Creates a folder in current directory with png data set
+
+#create data set for one gesture:
+#1 Set GESTURE_NAME constant to your gesture name 
+#2 Set lenght (how many png files) of yout data set
+#3 Start propram 
+#4 when ready to take photos click the s key on your keyboard
+#5 program automaticaly exit after compliting task
+GESTURE_NAME = "fist_flipped" 
+DATA_SIZE = 100
+
 import mediapipe as mp
 import cv2
 import os
@@ -13,11 +24,12 @@ current_dir = os.getcwd()
 frame_number = 0
 
 
-# for file in os.listdir(f'{current_dir}/fist_closed'):
-#     print(file)
+# create directory
+GESTURE_DIR = os.path.join(current_dir,f'{GESTURE_NAME}') 
+
+os.makedirs(GESTURE_DIR)
 
 start = False
-
 while(True):
     ret, frame = cap.read()
 
@@ -30,10 +42,10 @@ while(True):
        start = True
 
     if start:
-        if(frame_number < 100):
+        if(frame_number < DATA_SIZE):
             frame_number += 1
             print(frame_number)
-            filename = f'{current_dir}/rand_gest/fo_{frame_number}.png'
+            filename = f'{current_dir}/{GESTURE_NAME}/fo_{frame_number}.png'
             cv2.imwrite(filename,frame)
         else:
             break
