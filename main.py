@@ -6,7 +6,6 @@ from torch_nn import mlp #use torch
 from hand import HandDetect
 from hand import cv2
 
-
 from get_data import get_landmarks_input 
 from get_data import read_json
 
@@ -17,6 +16,7 @@ WIN_WIDTH = 1920
 WIN_HEIGHT = 1080
 
 cap = cv2.VideoCapture(0)
+# cap.set(cv2.CAP_PROP_FPS,60)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH,WIN_WIDTH)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT,WIN_HEIGHT)
 
@@ -24,10 +24,20 @@ detector = HandDetect(False,2,0.5,0.5)
 data_1 = []
 
 
-input,target = read_json()
+inputs,target = read_json()
 
-NET = mlp([40,32])
-NET.Train(input,target,150)
+print(len(inputs))
+print(len(target))
+# iter = 0
+# for i in input:
+#     if isinstance(i,bool):
+#         print(iter)
+#         print("INVALID_DATA")
+#     iter += 1
+
+NET = mlp([65,65,65])
+
+NET.Train(inputs,target,150,0.01)
  
 
 while True:
@@ -42,7 +52,7 @@ while True:
 
     cv2.imshow("camera",frame)
 
-    if cv2.waitKey(25) == ord('q'):
+    if cv2.waitKey(1) == ord('q'):
         break
 
     if len(data_1) > 0:

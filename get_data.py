@@ -9,7 +9,6 @@ import json
 import os
 import random
 
-
 #every time when adding/removing gesture add set to true
 #after that set to False if you want fast way of runnng other programs
 Update_Data_Set = True
@@ -21,7 +20,9 @@ GESTURES = [
     "fist_closed",
     "fist_flipped",
     "german_3" ,
-    "rand_gest" 
+    "uk_3",
+    "kon",
+    "zero" 
 ]
 
 
@@ -51,9 +52,10 @@ def get_landmarks_input(data_1):
         
 
         for i in range(21):
-            # result_input.append(x_vals[i])
-            # result_input.append(y_vals[i])
-            result_input.append(math.sqrt(x_vals[i]*x_vals[i] + y_vals[i]*y_vals[i]))
+            result_input.append(x_vals[i])
+            result_input.append(y_vals[i])
+            # result_input.append(math.sqrt(x_vals[i]*x_vals[i] + y_vals[i]*y_vals[i]))
+        
 
         return result_input
 
@@ -72,8 +74,8 @@ def create_data_set():
 
     current_dir = os.getcwd()
 
-    input = []
-    target = []
+    input_data = []
+    target_data = []
 
     target_gesture = []
 
@@ -89,9 +91,10 @@ def create_data_set():
         target_gesture[gesture_index] = 1 
 
         for file in os.listdir(f'{current_dir}/{gesture}'):
-            if get_data_png(f'{gesture}/{file}'):
-                input.append(get_data_png(f'{gesture}/{file}'))
-                target.append(target_gesture.copy()) #
+            sample = get_data_png(f'{gesture}/{file}')
+            if sample and  isinstance(sample,list):
+                input_data.append(sample)
+                target_data.append(target_gesture.copy()) #
 
         print(f"gesture {GESTURES[gesture_index]} added")
 
@@ -99,16 +102,15 @@ def create_data_set():
         gesture_index += 1
 
 
-
     #shuffle the data
-    combined = list(zip(input, target))
+    combined = list(zip(input_data, target_data))
 
     random.shuffle(combined)
 
-    input, target = zip(*combined)
+    input_data, target_data = zip(*combined)
     Data = {
-        "input": input ,
-        "target": target,
+        "input": input_data ,
+        "target": target_data,
     }
 
     with open("data_set.json","w") as f:
@@ -116,14 +118,28 @@ def create_data_set():
 
     
 def read_json():
+
     with open("data_set.json","r") as f:
         data = json.load(f)
     
-    input = data["input"]
-    target = data["target"]
+    input_data = data["input"]
+    target_data = data["target"]
+            
+
+    return input_data, target_data
+
+def split_data(input,target,train_size):
+
+    test_size = round(len(input)*train_size)
+    x_train = input[0:test_size]
+    x_test = input[test_size:len(input)]
+
+    y_train = target[0:test_size]
+    y_test = target[test_size:len(input)]
+
+    return x_train, y_train, x_test, y_test
 
 
-    return input, target
 
 #UPDATE DATA SET 
 if(Update_Data_Set):
