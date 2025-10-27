@@ -18,6 +18,7 @@ class mlp(nn.Module):
         self.loss_history = []
 
         self.input = []
+        self.Layers_initialized = False
     
     def create_layers(self):
         layers = []
@@ -34,17 +35,21 @@ class mlp(nn.Module):
     def forward(self, x):
         return self.net(x)
 
-    def Train(self, input_data, target, max_epoch=100, lr=0.01):
+    def Train(self, input_data, target, max_epoch,lr):
 
         self.input_size = len(input_data[0])
         self.output_size = len(target[0])
         
-        if self.input_size != 0:
-            self.create_layers()
+        if not self.Layers_initialized:
+            if self.input_size != 0:
+                self.create_layers()
 
+        self.epochs = []
+        self.Loss = []
+        self.loss_history = []
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(self.parameters(), lr=lr)
+        optimizer = optim.Adam(self.parameters(),lr=lr)
 
         input_tensor = torch.tensor(input_data, dtype=torch.float32)
         target_tensor = torch.tensor([t.index(1) for t in target], dtype=torch.long)
@@ -64,6 +69,9 @@ class mlp(nn.Module):
             self.loss_history.append(loss.item())
         self.Loss = self.loss_history
         self.final_net_error = self.Loss[-1]
+
+        self.Layers_initialized = True
+    
             
     def input_change(self, input):
         self.input = input
