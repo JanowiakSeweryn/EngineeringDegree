@@ -11,37 +11,47 @@ bmp_next_time = 0
 Window = Win()
 frame_start = 0
 
-chunk = sound_effect(b"bmp.wav")
+level_song = sound_effect(b"remastered1.wav")
+
+level_song.LoadLevel()
 
    
 next_beat = time.perf_counter() + BEAT_INTERVAL
 
-def play_bit():
-    global frame
-    global bmp_next_time
-    global next_beat
+def Play(): 
 
-  
-    if frame_start >= next_beat:
-        
-        next_beat += BEAT_INTERVAL  # schedule next beat
-        chunk.play()
+    click = 0
+    if Window.Right : click = 1
+    if Window.Left : click = 2
+
+    level_song.PlayLevel(click)
     
-    # sleep just enough to maintain ~60fp
-
 
 while(Window.run):
+
     frame_start = time.perf_counter()
+    
     Window.Events()
+    if Window.Start:
+        print(frame)
+        frame += 1
+        if(frame >= 60):
+            level_song.play()
+            Play()
+        
     Window.Rendering()
 
+
     print(frame)
-    play_bit()
+
+    Window.Reset_Events()
+
 
     frame_end_time = time.perf_counter() - frame_start
     if (frame_end_time < frame_time):
-        # time.sleep(frame_time - frame_end_time)
-        time.sleep(max(0, (1/60) - (time.perf_counter() - frame_start)))
+        time.sleep(frame_time - frame_end_time)
+  
+    
     
 
 Window.Destroy()

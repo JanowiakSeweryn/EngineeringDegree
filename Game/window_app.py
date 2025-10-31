@@ -31,6 +31,10 @@ class Win:
         self.run = True
         self.change_color = False
 
+        self.Start = False
+        self.Left = False
+        self.Right = False
+
     def Events(self):
         self.events = sdl2.ext.get_events()
 
@@ -40,8 +44,13 @@ class Win:
             if(event.type == sdl2.SDL_KEYDOWN):
                 if event.key.keysym.sym == sdl2.SDLK_RIGHT:
                     self.change_color = True
+                    self.Right = True
                 if event.key.keysym.sym == sdl2.SDLK_LEFT:
                     self.change_color = True
+                    self.Left = True
+                if event.key.keysym.sym == sdl2.SDLK_s:
+                    self.Start = True
+                
         
     def Rendering(self):
         
@@ -67,6 +76,10 @@ class Win:
             return 0
         else:
             return number
+    
+    def Reset_Events(self):
+        self.Right = False
+        self.Left = False
     
 
 
