@@ -13,7 +13,7 @@ class neuron:
         self.error = 0
 
         for i in range(input_size):
-            self.weights.append(random.uniform(-1.5,1.5) * np.sqrt(2/input_size))
+            self.weights.append(random.uniform(-1,1) * np.sqrt(2/input_size))
 
     
     def reLu(self,wsum):

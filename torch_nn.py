@@ -40,9 +40,12 @@ class mlp(nn.Module):
         self.input_size = len(input_data[0])
         self.output_size = len(target[0])
         
-        if not self.Layers_initialized:
-            if self.input_size != 0:
-                self.create_layers()
+        # if not self.Layers_initialized:
+        #     if self.input_size != 0:
+        #         self.create_layers()
+
+        if self.input_size != 0:
+            self.create_layers()
 
         self.epochs = []
         self.Loss = []

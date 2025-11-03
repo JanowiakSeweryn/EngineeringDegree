@@ -31,7 +31,7 @@ class gesture_detection:
 
         input,target = read_json()
         self.NET = mlp([40,32])
-        self.NET.Train(input,target,150)
+        self.NET.Train(input,target,150,0.01)
 
         self.ret, self.frame = self.cap.read()
 

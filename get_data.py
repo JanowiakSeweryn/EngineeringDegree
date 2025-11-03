@@ -11,7 +11,7 @@ import random
 
 #every time when adding/removing gesture add set to true
 #after that set to False if you want fast way of runnng other programs
-Update_Data_Set = True
+Update_Data_Set = False
 
 #main list of gestures
 

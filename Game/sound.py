@@ -29,7 +29,8 @@ class sound_effect:
     def SaveLevel(self):
         for i in range(len(self.Level)):
             if (self.Level[i] != 0):
-                for j in range(10):
+                for j in range(5):
+                    self.Level[i-j] = self.Level[i]
                     self.Level[i-j] = self.Level[i]
 
         with open("Level.json","w") as f:

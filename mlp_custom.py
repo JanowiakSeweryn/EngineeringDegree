@@ -8,8 +8,8 @@ class mlp:
     def __init__(self, hidden_layer_size):
 
         #NETWORK QUALITY PARAMETERS:
-        self.batch_size = 250
-        self.learning_rate = 0.004
+        self.batch_size = 100
+        self.learning_rate = 0.001
         self.initial_learnig_rate = 0.1
         self.dynamic_learning_rate = False
 
@@ -154,7 +154,8 @@ class mlp:
         self.output = prev_input
         self.gesture_detected_index = np.argmax(self.softmax(self.output))
 
-    def Train(self,input_data,target_data,max_epoch):
+    def Train(self,input_data,target_data,max_epoch,learning_rate):
+        self.learning_rate = learning_rate
         
         self.init_layer_weights(input_data[0],target_data[0])
         self.epoch__max = max_epoch
