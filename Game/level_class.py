@@ -1,6 +1,8 @@
+import sdl2
 import sdl2.sdlmixer as mix
 import sys
 import json
+from rectangle import decoration
 
 class sound_effect:
     def __init__(self,filename):
@@ -12,6 +14,12 @@ class sound_effect:
         self.Level = [] 
         self.Level_play = []
         self.level_index = 0
+        self.draw_block = False
+        self.count = 0
+
+
+
+        self.blocs = [] #list of blocs to draw
 
         if not self.sound:
             print(f"Error, file : {filename} not found!")
@@ -49,9 +57,40 @@ class sound_effect:
         # if (self.Level_play[self.level_index] != click) : print("failed!!")
 
         self.level_index += 1
+    
+    def Create_blocs(self):
+        if not self.Level_play[self.level_index+30] == 0:
+            if self.count >= 0: self.draw_block = True
+            self.count+=1
 
+        if self.draw_block and self.count <= 10:
+            print("nighterss!!!!")
+            x = self.get_block_pos(self.Level_play[self.level_index])
+            color = sdl2.ext.Color(255,0,0)
+            self.blocs.append(decoration(color,x,0,200,200))
+            self.count == 0
+            self.draw_block = False
+        
+    def Destroy_blocs(self):
+        self.blocs = [b for b in self.blocs if not b.reset()]
 
+    def get_block_pos(self,index):
+        if index == 1:
+            return 100
+        else:
+            return 800
+        
+    def Draw_blocs(self,renderer):
+        self.Create_blocs()
+        for b in self.blocs:
+            b.draw(renderer)
+        # self.Destroy_blocs()
+        
+    
     def clean(self):
         mix.Mix_FreeChunk(self.sound)
         mix.Mix_CloseAudio()
+
+        
+
 

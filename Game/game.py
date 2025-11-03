@@ -9,22 +9,16 @@ BEAT_INTERVAL = FPS/120
 frame = 0
 bmp_next_time = 0
 Window = Win()
+
 frame_start = 0
 
 level_song = sound_effect(b"remastered1.wav")
 
 level_song.LoadLevel()
 
-   
 next_beat = time.perf_counter() + BEAT_INTERVAL
 
-def Play(): 
 
-    click = 0
-    if Window.Right : click = 1
-    if Window.Left : click = 2
-
-    level_song.PlayLevel(click)
     
 
 while(Window.run):
@@ -32,17 +26,8 @@ while(Window.run):
     frame_start = time.perf_counter()
     
     Window.Events()
-    if Window.Start:
-        print(frame)
-        frame += 1
-        if(frame >= 60):
-            level_song.play()
-            Play()
         
     Window.Rendering()
-
-
-    print(frame)
 
     Window.Reset_Events()
 
