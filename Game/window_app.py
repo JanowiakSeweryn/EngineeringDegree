@@ -2,17 +2,13 @@ import sdl2
 import sdl2.ext
 import time
 from rectangle import decoration
-from sound import sound_effect
+from level_class import sound_effect
 
 
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 1080
 BPM = 120
 FPB = 3600/BPM # frames per bit (game runs at 60 frames per second )
-
-level_song = sound_effect(b"remastered1.wav")
-
-level_song.LoadLevel()
 
 
 class Win:
@@ -29,7 +25,7 @@ class Win:
 
 
         self.window.show() 
-        self.rect = sdl2.SDL_Rect(0,600,1000,200)
+        self.rect = sdl2.SDL_Rect(0,750,1000,200)
         self.color_1 = sdl2.ext.Color(255,0,0)
         self.color_2 = sdl2.ext.Color(0,255,0)
         self.iter = 0 
@@ -65,16 +61,8 @@ class Win:
                 if event.key.keysym.sym == sdl2.SDLK_s:
                     self.Start = True
 
-    def Play(self): 
 
-        click = 0
-        if self.Right : click = 1
-        if self.Left : click = 2
-
-        level_song.PlayLevel(click)
-        level_song.Draw_blocs(self.renderer)
-
-    def Rendering(self):
+    def Render_start(self):
         
         self.renderer.clear(sdl2.ext.Color(0,0,0))
 
@@ -87,14 +75,11 @@ class Win:
         self.block_1.draw(self.renderer)
         self.block_2.draw(self.renderer)
 
-        if self.Start:
-            if(self.frame >= 60):
-                level_song.play()
-                self.Play()
 
+    def Render_present(self):
         self.renderer.present()
-
         self.frame += 1
+    
 
     def Destroy(self):
         self.renderer.destroy()
