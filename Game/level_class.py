@@ -20,7 +20,13 @@ class sound_effect:
         #if player have click the right pattern 
         self.Succeded = False
         self.Failed = False
+        
         self.succes_rate = 0
+        self.fail_rate = 0
+
+        #mistakes can hapen 1 time per 10 second of the level
+        self.fail_threshold = 0
+        self.level_failed = False
         self.filename = level_filename
 
         self.blocs = [] #list of blocs to draw
@@ -59,6 +65,12 @@ class sound_effect:
         with open(self.filename,"r") as f:
             data = json.load(f)
         self.Level_play = data["Level_pattern"]
+        self.fail_threshold = 0.01667*len(self.Level_play)*0.1
+    
+    def FailedLevel(self):
+        if self.fail_rate > self.fail_threshold:
+            self.level_failed = True
+
 
     def PlayLevel(self,click):
         if click != 0 and self.Level_play[self.level_index] != 0 :
@@ -69,13 +81,12 @@ class sound_effect:
         
             if (self.Level_play[self.level_index] != click ):
                 self.Failed = True
-
+                self.fail_rate += 1
         self.level_index += 1
     
     def Create_blocs(self):
         if self.level_index+30 < len(self.Level_play):
             if not self.Level_play[self.level_index+30] == 0 and not self.draw_block :
-                # print("nighterss!!!!")
                 x = self.get_block_pos(self.Level_play[self.level_index+30])
                 color = sdl2.ext.Color(255,0,0) 
                 self.blocs.append(decoration(color,x,0,150,150))
@@ -92,18 +103,35 @@ class sound_effect:
         if index == 2:
             return 100
         
+    def LoadPng(self,renderer,filename):
+        factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=renderer)
+        self.sprite = factory.from_image(filename)
+    
+    def disp(self,renderer):
+        renderer.copy(self.sprite,None)
+        
     def Draw_blocs(self,renderer):
         self.Create_blocs()
+
         if len(self.blocs) != 0:
-            if self.Succeded:
-                current_block = max(self.blocs,key=lambda d: d.rect.y)
-                current_block.color = sdl2.ext.Color(0,255,0)
-            if self.Failed:
-                current_block = max(self.blocs,key=lambda d: d.rect.y)
-                current_block.color = sdl2.ext.Color(55,0,0)
+            current_block = max(self.blocs,key=lambda d: d.rect.y)
+            if not current_block.checked:
+                if current_block.failed():
+                    self.Failed = True
+                    self.Succeded = False
+                    current_block.checked = True
+                    print("FAILED!")
+            else:
+                if self.Succeded:
+                    current_block.color = sdl2.ext.Color(0,255,0)
+                    current_block.checked = True
+                    
+                if self.Failed:
+                    current_block.color = sdl2.ext.Color(55,0,0)
         
         self.Failed = False
         self.Succeded = False
+
         for b in self.blocs:
             b.draw(renderer)
         self.Destroy_blocs()

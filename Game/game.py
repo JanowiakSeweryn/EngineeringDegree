@@ -20,15 +20,20 @@ song_file = f"sound/{SONG}"
 
 Level = sound_effect(song_file.encode("utf-8"),f"levels/{LEVEL_NAME}.json")
 Level.LoadLevel()
+Level.LoadPng(Window.renderer,"sprites/of_01.jpeg")
 
 def Play(renderer):
     click = 0
-    if Window.Start:
+    if Window.Start and not Level.level_failed:
         if Window.Right : click = 1
         if Window.Left : click = 2
         Level.Play()
         Level.PlayLevel(click)
         Level.Draw_blocs(renderer)
+        Level.FailedLevel() #check if current fails are enough to fail full level
+    if Level.level_failed:
+        Level.disp(Window.renderer)
+
 
 
 next_beat = time.perf_counter() + BEAT_INTERVAL
