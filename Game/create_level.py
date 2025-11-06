@@ -24,8 +24,10 @@ frame_start = 0
 def Create_Level(): 
 
     click = 0
-    if Window.Right : click = 1
-    if Window.Left : click = 2
+    if Window.Left : click = 1
+    if Window.Up : click = 2
+    if Window.Right : click = 3
+    if Window.Down : click = 4
 
     Level.SetLevel(click)
 

@@ -16,6 +16,7 @@ class sound_effect:
         self.level_index = 0
         self.draw_block = False
         self.count = 0
+        self.current_block = decoration(0,0,0,1,1)
 
         #if player have click the right pattern 
         self.Succeded = False
@@ -73,15 +74,33 @@ class sound_effect:
 
 
     def PlayLevel(self,click):
+
+        if len(self.blocs) != 0:
+            self.current_block = max(self.blocs,key=lambda d: d.rect.y)
+
         if click != 0 and self.Level_play[self.level_index] != 0 :
             if self.Level_play[self.level_index] == click:
                 self.Succeded = True
                 print(f'succes {self.succes_rate}')
                 self.succes_rate += 1
-        
+
+                self.current_block.color = sdl2.ext.Color(0,255,0)
+                self.current_block.checked = True
+                
             if (self.Level_play[self.level_index] != click ):
                 self.Failed = True
+                self.current_block.color = sdl2.ext.Color(55,0,0)
+                self.current_block.checked = True
                 self.fail_rate += 1
+            
+        if self.current_block.failed():
+            self.Failed = True
+            self.Succeded = False
+            self.current_block.checked = True
+            self.fail_rate+=1
+            self.current_block.color = sdl2.ext.Color(55,0,0)
+            print(f"FAILED!{self.fail_rate}")
+            
         self.level_index += 1
     
     def Create_blocs(self):
@@ -99,9 +118,13 @@ class sound_effect:
 
     def get_block_pos(self,index):
         if index == 1:
-            return 800
-        if index == 2:
             return 100
+        if index == 2:
+            return 300
+        if index == 4:
+            return 500
+        if index == 3:
+            return 800
         
     def LoadPng(self,renderer,filename):
         factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=renderer)
@@ -113,21 +136,6 @@ class sound_effect:
     def Draw_blocs(self,renderer):
         self.Create_blocs()
 
-        if len(self.blocs) != 0:
-            current_block = max(self.blocs,key=lambda d: d.rect.y)
-            if not current_block.checked:
-                if current_block.failed():
-                    self.Failed = True
-                    self.Succeded = False
-                    current_block.checked = True
-                    print("FAILED!")
-            else:
-                if self.Succeded:
-                    current_block.color = sdl2.ext.Color(0,255,0)
-                    current_block.checked = True
-                    
-                if self.Failed:
-                    current_block.color = sdl2.ext.Color(55,0,0)
         
         self.Failed = False
         self.Succeded = False
@@ -142,5 +150,4 @@ class sound_effect:
         mix.Mix_CloseAudio()
 
         
-
 

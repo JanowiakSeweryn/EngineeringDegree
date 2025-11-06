@@ -38,9 +38,9 @@ class Win:
         self.Start = False
         self.Left = False
         self.Right = False
+        self.Up = False
+        self.Down = False
 
-        self.block_1 = decoration(self.color_1,100,0,150,150)
-        self.block_2 = decoration(self.color_1,600,0,150,150)
 
         self.blocks = []
 
@@ -58,6 +58,13 @@ class Win:
                 if event.key.keysym.sym == sdl2.SDLK_LEFT:
                     self.change_color = True
                     self.Left = True
+                if event.key.keysym.sym == sdl2.SDLK_DOWN:
+                    self.change_color = True
+                    self.Down = True
+                if event.key.keysym.sym == sdl2.SDLK_UP:
+                    self.change_color = True
+                    self.Up = True
+
                 if event.key.keysym.sym == sdl2.SDLK_s:
                     self.Start = True
 
@@ -72,9 +79,6 @@ class Win:
             self.change_color = False
 
         self.renderer.fill([self.rect],sdl2.ext.Color(155,155,155))
-        self.block_1.draw(self.renderer)
-        self.block_2.draw(self.renderer)
-
 
     def Render_present(self):
         self.renderer.present()
@@ -96,6 +100,8 @@ class Win:
     def Reset_Events(self):
         self.Right = False
         self.Left = False
+        self.Up = False
+        self.Down = False
     
 
 
