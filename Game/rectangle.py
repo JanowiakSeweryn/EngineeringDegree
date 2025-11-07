@@ -2,6 +2,8 @@ import sdl2
 import sdl2.ext
 
 HEIGH = 1080
+BLOCK_SIZE  = 150
+BAR_HEIGH = 750 + BLOCK_SIZE
 class decoration:
     def __init__(self,color,x,y,width,height):
         self.color = color
@@ -25,7 +27,7 @@ class decoration:
         else: return False
     
     def reset(self):
-        if self.rect.y >= HEIGH: return True
+        if self.rect.y >= HEIGH or (self.checked and self.rect.y > BAR_HEIGH ): return True
         else: return False
         
     def draw(self,renderer):

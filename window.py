@@ -28,7 +28,7 @@ def gest_detect():
         current_gest = result
         res_frame = Clasifier.frame
         current_frame = res_frame
-        time.sleep(0.1)
+        # time.sleep(0.1)
 
 threading.Thread(target=gest_detect,daemon=True).start()
 

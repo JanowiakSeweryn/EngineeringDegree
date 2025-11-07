@@ -2,7 +2,6 @@ from window_app import Win
 import time
 from level_class import sound_effect
 
-
 SONG ="remastered1.wav"
 LEVEL_NAME = "Level1"
 FPS = 60
@@ -23,16 +22,16 @@ Level.LoadLevel()
 Level.LoadPng(Window.renderer,"sprites/of_01.jpeg")
 
 def Play(renderer):
-    # if Window.Start and not Level.level_failed:
-    click = 0
-    if Window.Left : click = 1
-    if Window.Up : click = 2
-    if Window.Right : click = 3
-    if Window.Down : click = 4
-    Level.Play()
-    Level.PlayLevel(click)
-    Level.Draw_blocs(renderer)
-    Level.FailedLevel() #check if current fails are enough to fail full level
+    if Window.Start: #and not Level.level_failed:
+        click = 0
+        if Window.Left : click = 1
+        if Window.Up : click = 2
+        if Window.Right : click = 3
+        if Window.Down : click = 4
+        Level.Play()
+        Level.PlayLevel(click)
+        Level.Draw_blocs(renderer)
+        Level.FailedLevel() #check if current fails are enough to fail full level
     # if Level.level_failed:
     #     Level.disp(Window.renderer)
 

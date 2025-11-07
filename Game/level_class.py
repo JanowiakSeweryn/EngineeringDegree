@@ -119,9 +119,9 @@ class sound_effect:
     def get_block_pos(self,index):
         if index == 1:
             return 100
-        if index == 2:
-            return 300
         if index == 4:
+            return 300
+        if index == 2:
             return 500
         if index == 3:
             return 800
