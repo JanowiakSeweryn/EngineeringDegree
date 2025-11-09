@@ -28,7 +28,6 @@ def gest_detect():
         current_gest = result
         res_frame = Clasifier.frame
         current_frame = res_frame
-        # time.sleep(0.1)
 
 threading.Thread(target=gest_detect,daemon=True).start()
 
@@ -44,7 +43,9 @@ color_fo = sdl2.ext.Color(255,0,0)
 color_ff = sdl2.ext.Color(155,0,0)
 color_fc = sdl2.ext.Color(0,0,255)
 color_g3 = sdl2.ext.Color(0,255,0)
-color_rg = sdl2.ext.Color(255,255,0)
+color_zero = sdl2.ext.Color(55,55,155)
+color_kon = sdl2.ext.Color(255,255,0)
+
 
 ccolor = color_fo
 
@@ -65,16 +66,16 @@ while(run):
     if frame % 60 == 0:
         frame = 0
         
-        if current_gest == "german_3":
-            ccolor = color_g3
-        if current_gest == "fist_open":
-            ccolor = color_fo
-        if current_gest == "fist_closed":
-            ccolor = color_fc
-        if current_gest == "rand_gest":
-            ccolor = color_rg
-        if current_gest == "fist_flipped":
-            ccolor = color_ff
+    if current_gest == "german_3":
+        ccolor = color_g3
+    if current_gest == "fist_open":
+        ccolor = color_fo
+    if current_gest == "fist_closed":
+        ccolor = color_fc
+    if current_gest == "kon":
+        ccolor = color_kon
+    if current_gest == "zero":
+        ccolor = color_zero
 
     renderer.clear(sdl2.ext.Color(0,0,0))
     renderer.fill([rect],ccolor)
@@ -82,6 +83,7 @@ while(run):
 
     if current_frame is not None:
         cv2.imshow("camera",current_frame)
+        cv2.waitKey(1)
 
     frame_time = time.perf_counter() - frame_start
 

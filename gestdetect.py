@@ -2,6 +2,7 @@
 from torch_nn import mlp #use torch 
 # from mlp_custom import mlp #use my own neural network
 
+
 #media pipe class to detect hand
 from hand import HandDetect
 from hand import cv2
@@ -13,13 +14,17 @@ from get_data import read_json
 #gestures name
 from get_data import GESTURES 
 
+import os 
+
+
+
 
 class gesture_detection:
 
     def __init__(self):
 
-        WIN_WIDTH = 1920
-        WIN_HEIGHT = 1080
+        WIN_WIDTH = 315
+        WIN_HEIGHT = 240
 
         self.cap = cv2.VideoCapture(0)
         self.cap.set(cv2.CAP_PROP_FPS,60)
@@ -41,7 +46,7 @@ class gesture_detection:
         src = cv2.flip(self.frame,1)
         self.frame = src
         self.frame = self.detector.findfinger(self.frame)
-
+        # cv2.imshow("camera",self.frame)
         data_1 = self.detector.handlm_Pos()
     
 
@@ -51,7 +56,8 @@ class gesture_detection:
 
             # NET.disp() #displays softmax of full output for all gestures 
 
-            # print(GESTURES[self.NET.gesture_detected_index]) #displays name of the gesture
+            print(GESTURES[self.NET.gesture_detected_index]) #displays name of the gesture
+            
             return GESTURES[self.NET.gesture_detected_index]
         
     def destroy_cap(self):
