@@ -3,6 +3,7 @@ import sdl2.sdlmixer as mix
 import sys
 import json
 from rectangle import decoration
+import copy
 
 class sound_effect:
     def __init__(self,sound_filename,level_filename):
@@ -17,6 +18,12 @@ class sound_effect:
         self.draw_block = False
         self.count = 0
         self.current_block = decoration(0,0,0,1,1)
+
+        color = sdl2.ext.Color(255,0,0)
+        self.block_right = decoration(color,800,0,150,150)
+        self.block_up = decoration(color,500,0,150,150)
+        self.block_down = decoration(color,300,0,150,150)
+        self.block_left = decoration(color,100,0,150,150)
 
         #if player have click the right pattern 
         self.Succeded = False
@@ -36,6 +43,13 @@ class sound_effect:
             print(f"Error, file : {sound_filename} not found!")
             sys.exit()
         pass
+
+    def Loadblocs_png(self,renderer):
+        self.block_down.load_png("sprites/down.png",renderer)
+        self.block_up.load_png("sprites/up.png",renderer)
+        self.block_left.load_png("sprites/left.png",renderer)
+        self.block_right.load_png("sprites/right.png",renderer)
+        print("PNG INITIALIZED")
 
     def Play(self):
         if(self.start_playing == True):
@@ -81,6 +95,7 @@ class sound_effect:
         if click != 0 and self.Level_play[self.level_index] != 0 :
             if self.Level_play[self.level_index] == click:
                 self.Succeded = True
+
                 print(f'succes {self.succes_rate}')
                 self.succes_rate += 1
 
@@ -102,29 +117,28 @@ class sound_effect:
             print(f"FAILED!{self.fail_rate}")
             
         self.level_index += 1
-    
+
+    def Destroy_blocs(self):
+        self.blocs = [b for b in self.blocs if not b.reset()]
+
     def Create_blocs(self):
         if self.level_index+30 < len(self.Level_play):
             if not self.Level_play[self.level_index+30] == 0 and not self.draw_block :
                 x = self.get_block_pos(self.Level_play[self.level_index+30])
-                color = sdl2.ext.Color(255,0,0) 
-                self.blocs.append(decoration(color,x,0,150,150))
+                self.blocs.append(x)
                 self.draw_block = True
             if self.Level_play[self.level_index+30] == 0 :
                 self.draw_block = False
-        
-    def Destroy_blocs(self):
-        self.blocs = [b for b in self.blocs if not b.reset()]
-
+ 
     def get_block_pos(self,index):
         if index == 1:
-            return 100
+            return copy.copy(self.block_left)
         if index == 4:
-            return 300
+            return copy.copy(self.block_down)
         if index == 2:
-            return 500
+            return  copy.copy(self.block_up)
         if index == 3:
-            return 800
+            return  copy.copy(self.block_right)
         
     def LoadPng(self,renderer,filename):
         factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=renderer)
@@ -142,6 +156,7 @@ class sound_effect:
 
         for b in self.blocs:
             b.draw(renderer)
+
         self.Destroy_blocs()
         
     
