@@ -23,13 +23,15 @@ class decoration:
         self.rect2 = sdl2.SDL_Rect(self.x-self.rect_size,self.y-self.rect_size,
                                    self.width+2*self.rect_size,self.height+2*self.rect_size)
         self.sprite = 0
+        self.index = 0
 
 
         pass
-
     def __copy__(self):
         new_obj = type(self)(self.color,self.x,self.y,self.width,self.height)  # manually call the constructor (__init__)
         # new_obj.x = self.x
+        new_obj.index = self.index
+        self.index += 1
         new_obj.sprite = self.sprite
         
         return new_obj
@@ -51,6 +53,11 @@ class decoration:
     def reset(self):
         if self.rect.y >= HEIGH or (self.checked and self.rect.y > BAR_HEIGH ): return True
         else: return False
+    
+    def center_rect(self, x, y, w, h, size):
+        
+        return x- size, y-size, w+2*size, h+2*size 
+
         
     def draw(self,renderer):
         renderer.fill(self.rect2,self.color)

@@ -40,7 +40,7 @@ while(Window.run):
         print(frame)
         frame += 1
         if(frame >= 60):
-            Level.Play()
+            Level.PlayMusic()
             Create_Level()
 
 

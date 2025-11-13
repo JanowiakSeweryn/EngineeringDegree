@@ -25,7 +25,7 @@ class Win:
 
 
         self.window.show() 
-        self.rect = sdl2.SDL_Rect(0,780,1000,200)
+        self.rect = sdl2.SDL_Rect(0,750,1000,200)
         self.color_1 = sdl2.ext.Color(255,0,0)
         self.color_2 = sdl2.ext.Color(0,255,0)
         self.iter = 0 
@@ -40,7 +40,7 @@ class Win:
         self.Right = False
         self.Up = False
         self.Down = False
-
+        self.Pause = False
 
         self.blocks = []
 
@@ -52,15 +52,19 @@ class Win:
             if(event.type == sdl2.SDL_QUIT):
                 self.run = False
             if(event.type == sdl2.SDL_KEYDOWN):
+
                 if event.key.keysym.sym == sdl2.SDLK_RIGHT:
                     self.change_color = True
                     self.Right = True
+
                 if event.key.keysym.sym == sdl2.SDLK_LEFT:
                     self.change_color = True
                     self.Left = True
+
                 if event.key.keysym.sym == sdl2.SDLK_DOWN:
                     self.change_color = True
                     self.Down = True
+
                 if event.key.keysym.sym == sdl2.SDLK_UP:
                     self.change_color = True
                     self.Up = True
@@ -68,6 +72,8 @@ class Win:
                 if event.key.keysym.sym == sdl2.SDLK_s:
                     self.Start = True
 
+                if event.key.keysym.sym == sdl2.SDLK_p:
+                    self.Pause = True
 
     def Render_start(self):
         
@@ -102,6 +108,8 @@ class Win:
         self.Left = False
         self.Up = False
         self.Down = False
+        self.Pause = False
+
     
 
 

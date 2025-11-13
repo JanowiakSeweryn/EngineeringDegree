@@ -4,6 +4,7 @@ sys.path.insert(0,"../")
 from gestdetect import gesture_detection
 
 from window_app import Win
+from menu import menu
 import time
 from level_class import sound_effect
 import threading
@@ -15,14 +16,16 @@ SONG ="remastered1.wav"
 LEVEL_NAME = "Level1"
 FPS = 60
 frame_time = 1/FPS
-BEAT_INTERVAL = FPS/120
-
 frame = 0
 bmp_next_time = 0
+
 Window = Win()
 
 frame_start = 0
 
+Menu = menu(1000,600)
+
+Menu.create_buttons(Window.renderer)
 
 Clasifier = gesture_detection()
 
@@ -55,26 +58,23 @@ Level.Loadblocs_png(Window.renderer)
 def Play(renderer):
     if Window.Start: #and not Level.level_failed:
         click = 0
-        if Window.Left : click = 1
-        if Window.Up : click = 2
-        if Window.Right : click = 3
-        if Window.Down : click = 4
+        
+        # if Window.Left : click = 1
+        # if Window.Up : click = 2
+        # if Window.Right : click = 3
+        # if Window.Down : click = 4
 
-        if current_gest == "zero" : click = 1
-        # if current_gest == "german_3" : click = 2
+        if current_gest == "zero" or current_gest == "kon" : click = 1
+        if current_gest == "uk_3" : click = 2
         if current_gest == "german_3" : click = 3
-        # if current_gest == "fist_closed": click = 4
+        if current_gest == "fist_closed": click = 4
 
-        Level.Play()
+        Level.PlayMusic()
         Level.PlayLevel(click)
         Level.Draw_blocs(renderer)
         Level.FailedLevel() #check if current fails are enough to fail full level
     # if Level.level_failed:
-    #     Level.disp(Window.renderer)
-
-
-
-next_beat = time.perf_counter() + BEAT_INTERVAL
+    #     Level.disp(Window.renderer
 
 
 while(Window.run):
@@ -82,9 +82,19 @@ while(Window.run):
     frame_start = time.perf_counter()
     
     Window.Events()
-        
+
     Window.Render_start()
-    Play(Window.renderer)
+        
+    if Window.Pause:
+        Menu.pause(Window.Pause)
+
+    if not Menu.paused :   
+        Play(Window.renderer)
+    else:
+        Level.PauseMusic()
+        Menu.Select_button(Window.Left, Window.Right)
+        Menu.Render(Window.renderer)
+
     Window.Render_present()
     Window.Reset_Events()
 

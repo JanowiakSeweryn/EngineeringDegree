@@ -11,7 +11,9 @@ class sound_effect:
 
         mix.Mix_OpenAudio(44100,mix.MIX_DEFAULT_FORMAT,2,2048)
         self.sound = mix.Mix_LoadWAV(sound_filename)
+        self.sound_channel = 1
         self.start_playing = True
+        self.paused_playing = False
         self.Level_pattern = [] 
         self.Level_play = []
         self.level_index = 0
@@ -32,6 +34,7 @@ class sound_effect:
         self.succes_rate = 0
         self.fail_rate = 0
 
+
         #mistakes can hapen 1 time per 10 second of the level
         self.fail_threshold = 0
         self.level_failed = False
@@ -51,10 +54,23 @@ class sound_effect:
         self.block_right.load_png("sprites/right.png",renderer)
         print("PNG INITIALIZED")
 
-    def Play(self):
-        if(self.start_playing == True):
-            mix.Mix_PlayChannel(-1,self.sound,0)
-            self.start_playing = False
+    def PlayMusic(self):
+
+        if not self.paused_playing:
+            if self.start_playing :
+                mix.Mix_PlayChannel(self.sound_channel,self.sound,0)
+                self.start_playing = False
+        else:
+            if self.start_playing:
+                mix.Mix_Resume(self.sound_channel)
+                self.start_playing = False
+            
+    
+    def PauseMusic(self):
+        if not self.start_playing:
+            mix.Mix_Pause(self.sound_channel)
+            self.start_playing = True
+            self.paused_playing = True
 
     def SetLevel(self,impuls):
         self.Level_pattern.append(impuls) 
@@ -88,35 +104,36 @@ class sound_effect:
 
 
     def PlayLevel(self,click):
+        if self.level_index <  len(self.Level_play):
+            if len(self.blocs) != 0:
+                self.current_block = max(self.blocs,key=lambda d: d.rect.y)
+            
+            if click != 0 and self.Level_play[self.level_index] != 0 :
+                if self.Level_play[self.level_index] == click:
+                    self.Succeded = True
 
-        if len(self.blocs) != 0:
-            self.current_block = max(self.blocs,key=lambda d: d.rect.y)
+                    print(f'succes {self.succes_rate}')
+                    self.succes_rate += 1
 
-        if click != 0 and self.Level_play[self.level_index] != 0 :
-            if self.Level_play[self.level_index] == click:
-                self.Succeded = True
-
-                print(f'succes {self.succes_rate}')
-                self.succes_rate += 1
-
-                self.current_block.color = sdl2.ext.Color(0,255,0)
-                self.current_block.checked = True
+                    self.current_block.color = sdl2.ext.Color(0,255,0)
+                    self.current_block.checked = True
+                    
+                if (self.Level_play[self.level_index] != click ):
+                    if self.Level_play[self.level_index+1 == 0]:
+                        self.Failed = True
+                        self.current_block.color = sdl2.ext.Color(55,0,0)
+                        self.current_block.checked = True
+                        self.fail_rate += 1
                 
-            if (self.Level_play[self.level_index] != click ):
+            if self.current_block.failed():
                 self.Failed = True
-                self.current_block.color = sdl2.ext.Color(55,0,0)
+                self.Succeded = False
                 self.current_block.checked = True
-                self.fail_rate += 1
-            
-        if self.current_block.failed():
-            self.Failed = True
-            self.Succeded = False
-            self.current_block.checked = True
-            self.fail_rate+=1
-            self.current_block.color = sdl2.ext.Color(55,0,0)
-            print(f"FAILED!{self.fail_rate}")
-            
-        self.level_index += 1
+                self.fail_rate+=1
+                self.current_block.color = sdl2.ext.Color(55,0,0)
+                print(f"FAILED!{self.fail_rate}")
+                
+            self.level_index += 1
 
     def Destroy_blocs(self):
         self.blocs = [b for b in self.blocs if not b.reset()]
