@@ -8,8 +8,6 @@ from level_class import sound_effect
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 1080
 BPM = 120
-FPB = 3600/BPM # frames per bit (game runs at 60 frames per second )
-
 
 class Win:
     def __init__(self):
@@ -41,6 +39,7 @@ class Win:
         self.Up = False
         self.Down = False
         self.Pause = False
+        self.ClickButton = False
 
         self.blocks = []
 
@@ -74,6 +73,9 @@ class Win:
 
                 if event.key.keysym.sym == sdl2.SDLK_p:
                     self.Pause = True
+        
+                if event.key.keysym.sym == sdl2.SDLK_SPACE:
+                    self.ClickButton = True
 
     def Render_start(self):
         
@@ -109,6 +111,7 @@ class Win:
         self.Up = False
         self.Down = False
         self.Pause = False
+        self.ClickButton = False
 
     
 

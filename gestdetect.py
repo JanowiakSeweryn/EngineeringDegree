@@ -17,7 +17,7 @@ from get_data import GESTURES
 import os 
 
 
-
+# NET_FILE = "weights"
 
 class gesture_detection:
 
@@ -36,7 +36,9 @@ class gesture_detection:
 
         input,target = read_json()
         self.NET = mlp([40,32])
-        self.NET.Train(input,target,150,0.01)
+        self.NET.create_layers(len(input[0]),len(target[0]) )
+        self.NET.load_weights()
+        # self.NET.Train(input,target,150,0.01)
 
         self.ret, self.frame = self.cap.read()
 

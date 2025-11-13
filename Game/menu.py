@@ -22,6 +22,10 @@ class menu:
 
         self.paused = False
         self.switch = False
+        self.exe_button = False
+
+        self.option = [0,1,2]
+        self.current_option = 0
 
         # #filenames of icons 
         # self.filenames = ["sprites/down.png"]
@@ -34,11 +38,26 @@ class menu:
         for i in range(3):
             print(self.buttons[i].index)
 
-    def Select_button(self,event_left,event_right):
+    def Select_button(self,event_left,event_right,event_exe):
         
+        input = 0
+
+        if self.exe_button:
+            self.exe_button = False
+
+
         for b in self.buttons:
+
             b.select(self.selected_button)
 
+            if b.selected: break
+            input+=1
+
+
+        self.current_option = self.option[input]
+              
+        
+        if event_exe : self.exe_button = True
         if event_left: self.selected_button -= 1
         if event_right : self.selected_button += 1
         if self.selected_button < 0: self.selected_button = len(self.buttons)-1
@@ -56,6 +75,7 @@ class menu:
         else:
             if window_key:
                 self.paused = False
+        
 
     def Render(self,renderer):
         if self.paused:

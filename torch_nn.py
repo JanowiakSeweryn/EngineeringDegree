@@ -3,6 +3,12 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
+import os
+
+
+module_dir = os.path.dirname(__file__)
+NET_FILENAME = os.path.join(module_dir,"weights.pth" )
+
 
 class mlp(nn.Module):
     def __init__(self, hidden_sizes):
@@ -19,8 +25,11 @@ class mlp(nn.Module):
 
         self.input = []
         self.Layers_initialized = False
-    
-    def create_layers(self):
+
+    def create_layers(self,input_size,output_size):
+        self.input_size = input_size
+        self.output_size = output_size
+
         layers = []
         in_size = self.input_size
 
@@ -35,6 +44,9 @@ class mlp(nn.Module):
     def forward(self, x):
         return self.net(x)
 
+    def assign_layers(self,layers):
+        self.net = layers
+
     def Train(self, input_data, target, max_epoch,lr):
 
         self.input_size = len(input_data[0])
@@ -45,7 +57,7 @@ class mlp(nn.Module):
         #         self.create_layers()
 
         if self.input_size != 0:
-            self.create_layers()
+            self.create_layers(self.input_size,self.output_size)
 
         self.epochs = []
         self.Loss = []
@@ -81,6 +93,13 @@ class mlp(nn.Module):
         
     def disp(self):
         print(self.predict().squeeze(0).tolist())
+    
+    def save_weights(self):
+        # Save only parameters (lightweight)
+        torch.save(self.net.state_dict(),NET_FILENAME)
+    
+    def load_weights(self):
+        self.net.load_state_dict(torch.load(NET_FILENAME))
 
     def predict(self):
         self.eval()
@@ -95,5 +114,6 @@ class mlp(nn.Module):
         # print(probs.squeeze(0).tolist())
         self.gesture_detected_index = np.argmax(probs.squeeze(0).tolist())
         return probs
+    
 
 

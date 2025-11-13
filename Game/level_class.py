@@ -105,6 +105,7 @@ class sound_effect:
 
     def PlayLevel(self,click):
         if self.level_index <  len(self.Level_play):
+
             if len(self.blocs) != 0:
                 self.current_block = max(self.blocs,key=lambda d: d.rect.y)
             
@@ -118,7 +119,7 @@ class sound_effect:
                     self.current_block.color = sdl2.ext.Color(0,255,0)
                     self.current_block.checked = True
                     
-                if (self.Level_play[self.level_index] != click ):
+                else:
                     if self.Level_play[self.level_index+1 == 0]:
                         self.Failed = True
                         self.current_block.color = sdl2.ext.Color(55,0,0)
@@ -156,6 +157,7 @@ class sound_effect:
             return  copy.copy(self.block_up)
         if index == 3:
             return  copy.copy(self.block_right)
+        
         
     def LoadPng(self,renderer,filename):
         factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=renderer)
