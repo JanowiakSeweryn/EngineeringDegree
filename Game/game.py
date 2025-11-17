@@ -11,116 +11,67 @@ import cv2
 import time
 import sdl2
 
-
-
-SONG ="remastered1.wav"
-LEVEL_NAME = "Level1"
-FPS = 60
-frame_time = 1/FPS
-frame = 0
-bmp_next_time = 0
-
-Window = Win()
-
-frame_start = 0
-
-Menu = menu(1000,600)
-Main_screen = menu(1200,1080)
-
-Menu.create_buttons(Window.renderer)
-Main_screen.create_buttons(Window.renderer)
-Main_screen.color = sdl2.ext.Color(100,0,100)
-Main_screen.paused = True
-
-Clasifier = gesture_detection()
-
-run = True
-
-current_gest = None
-gest = None
-current_frame = None
-
-def gest_detect():
-    global current_gest 
-    global current_frame
-    while(run):
-        result = Clasifier.clasify()
-        current_gest = result
-        res_frame = Clasifier.frame
-        current_frame = res_frame
+from game_render import Window
+from game_render import frame_time
+from game_render import SCENES
+from game_render import gest_detect
+from game_render import InitializeGame
+from game_render import InitializeFrame
+from game_render import ShowFrame
 
 threading.Thread(target=gest_detect,daemon=True).start()
 
+scene_index = 0
+prev_scene_index = 0 
+change_scene = False
 
-song_file = f"sound/{SONG}"
+InitializeGame()
 
-Level = sound_effect(song_file.encode("utf-8"),f"levels/{LEVEL_NAME}.json")
-Level.LoadLevel()
-Level.LoadPng(Window.renderer,"sprites/of_01.jpeg")
-Level.Loadblocs_png(Window.renderer)
+def get_index():
 
-def Play(renderer):
-    if Window.Start: #and not Level.level_failed:
-        click = 0
-        
-        # if Window.Left : click = 1
-        # if Window.Up : click = 2
-        # if Window.Right : click = 3
-        # if Window.Down : click = 4
+    global scene_index
+    global change_scene
+    global prev_scene_index
 
-        if current_gest == "zero" or current_gest == "kon" : click = 1
-        if current_gest == "uk_3" : click = 2
-        if current_gest == "german_3" : click = 3
-        if current_gest == "fist_closed": click = 4
 
-        Level.PlayMusic()
-        Level.PlayLevel(click)
-        Level.Draw_blocs(renderer)
-        Level.FailedLevel() #check if current fails are enough to fail full level
-    # if Level.level_failed:
-    #     Level.disp(Window.renderer
+    if Window.Start or Window.Pause or Window.Return2Main:
+        change_scene = True
+
+    if change_scene:
+        current_index = scene_index
+
+        if Window.Return2Main : scene_index = 0
+        if Window.Start: scene_index = 1
+        if Window.Pause: scene_index = 2
+
+        if current_index == scene_index:
+            b = prev_scene_index
+            prev_scene_index = scene_index
+            scene_index = b
+        else:
+            prev_scene_index = current_index
+            
+        time.sleep(0.1)
+        change_scene = False
+    
 
 
 while(Window.run):
 
     frame_start = time.perf_counter()
-    
-    Window.Events()
 
-    Window.Render_start()
+    InitializeFrame()
+    get_index()
+    SCENES[scene_index]()
+    ShowFrame()
 
-    if not Main_screen.paused:
-    
-        if Window.Start:
-            Main_screen.paused = False
-
-        if Window.Pause:
-            Menu.pause(Window.Pause)
-
-        if not Menu.paused :   
-            Play(Window.renderer)
-        else:
-            Level.PauseMusic()
-            Menu.Select_button(Window.Left, Window.Right,Window.ClickButton)
-            Menu.Render(Window.renderer)
-    else:
-        Main_screen.Select_button(Window.Left,Window.Right,Window.ClickButton)
-        if Main_screen.exe_button:
-            if Main_screen.current_option == 0 : Main_screen.paused = False
-            #here add new button option
-            else: Main_screen.paused = True
-        Main_screen.Render(Window.renderer)
-
-    Window.Render_present()
-    Window.Reset_Events()
-
-    if current_frame is not None:
-        cv2.imshow("camera",current_frame)
-        cv2.waitKey(1)
 
 
     frame_end_time = time.perf_counter() - frame_start
     if (frame_end_time < frame_time):
         time.sleep(frame_time - frame_end_time)
+    
 
 Window.Destroy()
+
+

@@ -40,6 +40,7 @@ class Win:
         self.Down = False
         self.Pause = False
         self.ClickButton = False
+        self.Return2Main = False
 
         self.blocks = []
 
@@ -77,6 +78,9 @@ class Win:
                 if event.key.keysym.sym == sdl2.SDLK_SPACE:
                     self.ClickButton = True
 
+                if event.key.keysym.sym == sdl2.SDLK_m:
+                    self.Return2Main = True
+
     def Render_start(self):
         
         self.renderer.clear(sdl2.ext.Color(0,0,0))
@@ -106,12 +110,14 @@ class Win:
             return number
     
     def Reset_Events(self):
+        self.Start = False
         self.Right = False
         self.Left = False
         self.Up = False
         self.Down = False
         self.Pause = False
         self.ClickButton = False
+        self.Return2Main = False
 
     
 

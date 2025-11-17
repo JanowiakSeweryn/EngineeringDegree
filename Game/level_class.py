@@ -72,6 +72,12 @@ class sound_effect:
             self.start_playing = True
             self.paused_playing = True
 
+    def StopMusic(self):
+        if not self.start_playing:
+            mix.Mix_Pause(self.sound_channel)
+            self.start_playing = True
+            self.paused_playing = False
+
     def SetLevel(self,impuls):
         self.Level_pattern.append(impuls) 
 
@@ -109,7 +115,7 @@ class sound_effect:
             if len(self.blocs) != 0:
                 self.current_block = max(self.blocs,key=lambda d: d.rect.y)
             
-            if click != 0 and self.Level_play[self.level_index] != 0 :
+            if click != 0 and self.Level_play[self.level_index] != 0 and not self.current_block.checked:
                 if self.Level_play[self.level_index] == click:
                     self.Succeded = True
 
@@ -135,6 +141,10 @@ class sound_effect:
                 print(f"FAILED!{self.fail_rate}")
                 
             self.level_index += 1
+    
+    def ResetLevel(self):
+        self.level_index = 0
+        # self.blocs.clear()
 
     def Destroy_blocs(self):
         self.blocs = [b for b in self.blocs if not b.reset()]
@@ -158,7 +168,7 @@ class sound_effect:
         if index == 3:
             return  copy.copy(self.block_right)
         
-        
+
     def LoadPng(self,renderer,filename):
         factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=renderer)
         self.sprite = factory.from_image(filename)

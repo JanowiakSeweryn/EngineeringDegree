@@ -52,6 +52,6 @@ while(Window.run):
     if (frame_end_time < frame_time):
         time.sleep(frame_time - frame_end_time)
    
-Level.SaveLevel(10)
+Level.SaveLevel(15)
 Level.clean()
 Window.Destroy()

@@ -6,6 +6,8 @@ from button import button
 
 class menu:
     def __init__(self,w,h):
+
+        index = 0
         self.width = w 
         self.heigh = h
         self.x = 100
@@ -35,8 +37,7 @@ class menu:
             self.button.load_png("sprites/down.png",renderer)
             self.buttons.append(copy.copy(self.button))
         
-        for i in range(3):
-            print(self.buttons[i].index)
+
 
     def Select_button(self,event_left,event_right,event_exe):
         
@@ -45,17 +46,17 @@ class menu:
         if self.exe_button:
             self.exe_button = False
 
-
         for b in self.buttons:
 
             b.select(self.selected_button)
 
-            if b.selected: break
-            input+=1
+        
+        s_button = [b for b in self.buttons if b.selected]
 
+        input = s_button[0].index
 
         self.current_option = self.option[input]
-              
+
         
         if event_exe : self.exe_button = True
         if event_left: self.selected_button -= 1
@@ -63,8 +64,7 @@ class menu:
         if self.selected_button < 0: self.selected_button = len(self.buttons)-1
         if self.selected_button >= len(self.buttons) : self.selected_button = 0
 
-        print(self.selected_button)
-
+        # print(self.selected_button)
 
             
     def pause(self,window_key):
@@ -75,14 +75,13 @@ class menu:
         else:
             if window_key:
                 self.paused = False
-        
+
 
     def Render(self,renderer):
-        if self.paused:
-            renderer.fill([self.rect],self.color)
-            for b in self.buttons:
-                b.draw(renderer)
-            
+        renderer.fill([self.rect],self.color)
+        for b in self.buttons:
+            b.draw(renderer)
+        
     
         
 
