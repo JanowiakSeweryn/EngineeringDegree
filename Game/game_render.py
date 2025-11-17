@@ -13,6 +13,8 @@ from window_app import Win
 from menu import menu
 from level_class import sound_effect
 
+from options import MENU_OPTION,MAIN_SCREEN_OPTION
+
 import threading
 import cv2
 import time
@@ -36,8 +38,8 @@ Clasifier = gesture_detection()
 
 #load sprites buttons 
 def InitializeGame():
-    Menu.create_buttons(Window.renderer)
-    Main_screen.create_buttons(Window.renderer)
+    Menu.CreateOptions(MENU_OPTION,Window.renderer)
+    Main_screen.CreateOptions(MAIN_SCREEN_OPTION,Window.renderer)
     Main_screen.color = sdl2.ext.Color(100,0,100)
     Main_screen.paused = True
     Level.LoadLevel()
@@ -86,10 +88,10 @@ def PlayScene():
     if current_gest == "german_3" : click = 3
     if current_gest == "fist_closed": click = 4
     
-    if Window.Left : click = 1
-    if Window.Up : click = 2
-    if Window.Right : click = 3
-    if Window.Down : click = 4
+    if Window.Event_trigger["Left"] : click = 1
+    if Window.Event_trigger["Up"] : click = 2
+    if Window.Event_trigger["Right"] : click = 3
+    if Window.Event_trigger["Down"] : click = 4
 
     Level.PlayMusic()
     Level.PlayLevel(click)
@@ -105,7 +107,9 @@ def PauseSceneRender():
     
     # InitializeFrame()
     Level.PauseMusic()
-    Menu.Select_button(Window.Left, Window.Right,Window.ClickButton)
+    Menu.Select_button(Window.Event_trigger["Left"], 
+        Window.Event_trigger["Right"],
+        Window.Event_trigger["ClickButton"])
     Menu.Render(Window.renderer)
     
     # ShowFrame()
@@ -114,12 +118,32 @@ def MainSceneRender():
     # InitializeFrame()
     Level.ResetLevel()
     Level.StopMusic()
-    Main_screen.Select_button(Window.Left,Window.Right,Window.ClickButton)
-    if Main_screen.exe_button:
-        Main_screen.current_option == 0
-
+    Main_screen.Select_button(Window.Event_trigger["Left"],
+        Window.Event_trigger["Right"],
+        Window.Event_trigger["ClickButton"])  
+    
     Main_screen.Render(Window.renderer)
 
     # ShowFrame()
 
-SCENES = [MainSceneRender,PlayScene,PauseSceneRender]
+def RestartLevel():
+    Level.ResetLevel()
+    Level.StopMusic()
+    
+
+def TriggerButtons(scene):
+
+    inp = 0 #user input
+    if scene == "mainscene": inp = Main_screen.Trigger_button()
+    if scene == "pausescene": inp = Menu.Trigger_button()
+
+    print(f"inp = {inp}")
+    return inp
+
+
+SCENES = {
+        "mainscene": MainSceneRender,
+        "playscene": PlayScene,
+        "pausescene" : PauseSceneRender,
+        }
+

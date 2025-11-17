@@ -18,11 +18,16 @@ from game_render import gest_detect
 from game_render import InitializeGame
 from game_render import InitializeFrame
 from game_render import ShowFrame
+from game_render import TriggerButtons
+from game_render import RestartLevel
+
+from options import OPTIONS
 
 threading.Thread(target=gest_detect,daemon=True).start()
 
-scene_index = 0
-prev_scene_index = 0 
+scene_index = "mainscene"
+prev_scene_index = "mainscene"
+
 change_scene = False
 
 InitializeGame()
@@ -34,15 +39,19 @@ def get_index():
     global prev_scene_index
 
 
-    if Window.Start or Window.Pause or Window.Return2Main:
+    if Window.Event_trigger["Start"] or Window.Event_trigger["Pause"] or Window.Event_trigger["Return2Main"] :
+        change_scene = True
+
+    if Window.Event_trigger["Resume"]:
         change_scene = True
 
     if change_scene:
         current_index = scene_index
 
-        if Window.Return2Main : scene_index = 0
-        if Window.Start: scene_index = 1
-        if Window.Pause: scene_index = 2
+        if Window.Event_trigger["Return2Main"] : scene_index = "mainscene"
+        if Window.Event_trigger["Start"]: scene_index = "playscene"
+        if Window.Event_trigger["Pause"]: scene_index = "pausescene"
+        if Window.Event_trigger["Resume"]: scene_index = "playscene"
 
         if current_index == scene_index:
             b = prev_scene_index
@@ -55,15 +64,34 @@ def get_index():
         change_scene = False
     
 
+def TriggerOptions(option):
+    global scene_index
+    if option is not None:
+        if option == "play": Window.Event_trigger["Start"] = True
+        if option == "pause": Window.Event_trigger["Pause"] = True
+        if option == "resume" :Window.Event_trigger["Resume"] = True
+        if option == "return2home" : Window.Event_trigger["Return2Main"] = True
+        if option == "restart": 
+            RestartLevel()
+            scene_index = "playscene"
 
 while(Window.run):
 
     frame_start = time.perf_counter()
 
     InitializeFrame()
+
     get_index()
+
     SCENES[scene_index]()
+
+    current_option = TriggerButtons(scene_index)
+
+               
     ShowFrame()
+
+    TriggerOptions(current_option)
+    
 
 
 

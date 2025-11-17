@@ -33,14 +33,17 @@ class Win:
         self.run = True
         self.change_color = False
 
-        self.Start = False
-        self.Left = False
-        self.Right = False
-        self.Up = False
-        self.Down = False
-        self.Pause = False
-        self.ClickButton = False
-        self.Return2Main = False
+        self.Event_trigger = {
+            "Start" :False,
+            "Left" :False,
+            "Right" :False,
+            "Up": False,
+            "Down":False,
+            "Pause":False,
+            "ClickButton" :False,
+            "Return2Main": False ,
+            "Resume" : False
+        }
 
         self.blocks = []
 
@@ -55,31 +58,31 @@ class Win:
 
                 if event.key.keysym.sym == sdl2.SDLK_RIGHT:
                     self.change_color = True
-                    self.Right = True
+                    self.Event_trigger["Right"] = True
 
                 if event.key.keysym.sym == sdl2.SDLK_LEFT:
                     self.change_color = True
-                    self.Left = True
+                    self.Event_trigger["Left"] = True
 
                 if event.key.keysym.sym == sdl2.SDLK_DOWN:
                     self.change_color = True
-                    self.Down = True
+                    self.Event_trigger["Down"] = True
 
                 if event.key.keysym.sym == sdl2.SDLK_UP:
                     self.change_color = True
-                    self.Up = True
+                    self.Event_trigger["Up"] = True
 
                 if event.key.keysym.sym == sdl2.SDLK_s:
-                    self.Start = True
+                    self.Event_trigger["Start"] = True
 
                 if event.key.keysym.sym == sdl2.SDLK_p:
-                    self.Pause = True
+                    self.Event_trigger["Pause"] = True
         
                 if event.key.keysym.sym == sdl2.SDLK_SPACE:
-                    self.ClickButton = True
+                    self.Event_trigger["ClickButton"] = True
 
                 if event.key.keysym.sym == sdl2.SDLK_m:
-                    self.Return2Main = True
+                    self.Event_trigger["Return2Main"] = True
 
     def Render_start(self):
         
@@ -110,14 +113,9 @@ class Win:
             return number
     
     def Reset_Events(self):
-        self.Start = False
-        self.Right = False
-        self.Left = False
-        self.Up = False
-        self.Down = False
-        self.Pause = False
-        self.ClickButton = False
-        self.Return2Main = False
+
+        for ev in self.Event_trigger:
+            self.Event_trigger[ev] = False
 
     
 

@@ -1,5 +1,6 @@
 import sdl2
 import sdl2.ext
+import os
 
 HEIGH = 1080
 BLOCK_SIZE  = 150
@@ -39,8 +40,9 @@ class decoration:
 
     def load_png(self,filename,renderer):
           #load png:
-        factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=renderer)
-        self.sprite = factory.from_image(filename)
+        if os.path.exists(filename):
+            factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=renderer)
+            self.sprite = factory.from_image(filename)
 
     def move(self):
         self.rect.y += self.speed

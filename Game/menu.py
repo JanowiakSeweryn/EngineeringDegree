@@ -26,18 +26,22 @@ class menu:
         self.switch = False
         self.exe_button = False
 
-        self.option = [0,1,2]
-        self.current_option = 0
+        self.option = []
+        self.current_option = None
 
         # #filenames of icons 
         # self.filenames = ["sprites/down.png"]
 
-    def create_buttons(self,renderer):
-        for i in range(3):
-            self.button.load_png("sprites/down.png",renderer)
-            self.buttons.append(copy.copy(self.button))
-        
 
+    #create option list in game_render.py
+    #each option have the option name as key to trigger this setting
+    #each option must have the same name of option.png or else it won't work
+
+    def CreateOptions(self,option_names,renderer):
+        for option in option_names:
+            self.option.append(option)
+            self.button.load_png(f"sprites/{option}.png",renderer)
+            self.buttons.append(copy.copy(self.button))
 
     def Select_button(self,event_left,event_right,event_exe):
         
@@ -65,8 +69,14 @@ class menu:
         if self.selected_button >= len(self.buttons) : self.selected_button = 0
 
         # print(self.selected_button)
+    def Trigger_button(self):
 
-            
+        if self.exe_button:
+            return self.current_option
+    
+        else:
+            return None
+
     def pause(self,window_key):
 
         if not self.paused:

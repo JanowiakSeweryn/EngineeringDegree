@@ -4,6 +4,7 @@ import sys
 import json
 from rectangle import decoration
 import copy
+import os
 
 class sound_effect:
     def __init__(self,sound_filename,level_filename):
@@ -144,7 +145,7 @@ class sound_effect:
     
     def ResetLevel(self):
         self.level_index = 0
-        # self.blocs.clear()
+        self.blocs.clear()
 
     def Destroy_blocs(self):
         self.blocs = [b for b in self.blocs if not b.reset()]
@@ -170,8 +171,9 @@ class sound_effect:
         
 
     def LoadPng(self,renderer,filename):
-        factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=renderer)
-        self.sprite = factory.from_image(filename)
+        if os.path.exists(filename):
+            factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=renderer)
+            self.sprite = factory.from_image(filename)
     
     def disp(self,renderer):
         renderer.copy(self.sprite,None)
