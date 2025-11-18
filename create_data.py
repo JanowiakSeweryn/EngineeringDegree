@@ -6,8 +6,9 @@
 #3 Start propram 
 #4 when ready to take photos click the s key on your keyboard
 #5 program automaticaly exit after compliting task
-GESTURE_NAME = "zero" 
+GESTURE_NAME = "right_thumb" 
 DATA_SIZE = 350
+ADDITIONAL_DATA_SIZE = 100 #if you want to add new data to existing gesture
 
 import mediapipe as mp
 import cv2
@@ -31,8 +32,14 @@ frame_number = 0
 # create directory
 GESTURE_DIR = os.path.join(current_dir,f'{GESTURE_NAME}') 
 
+
+add_data = 0
+
 if not os.path.isdir(GESTURE_DIR):
     os.makedirs(GESTURE_DIR)
+else:
+    add_data = DATA_SIZE    
+    frame_number = DATA_SIZE - 1
 
 start = False
 
@@ -49,7 +56,7 @@ while(True):
        start = True
     
     if start:
-        if(frame_number < DATA_SIZE):
+        if(frame_number < DATA_SIZE + add_data):
             frame_number += 1
 
             sys.stdout.write(f'{100*frame_number/DATA_SIZE}% done')

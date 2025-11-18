@@ -12,16 +12,14 @@ import time
 import sdl2
 
 from game_render import Window
-from game_render import frame_time
-from game_render import SCENES
+from game_render import frame_time, ClickButton
+from game_render import SCENES 
 from game_render import gest_detect
 from game_render import InitializeGame
 from game_render import InitializeFrame
 from game_render import ShowFrame
 from game_render import TriggerButtons
 from game_render import RestartLevel
-
-from options import OPTIONS
 
 threading.Thread(target=gest_detect,daemon=True).start()
 
@@ -66,6 +64,7 @@ def get_index():
 
 def TriggerOptions(option):
     global scene_index
+
     if option is not None:
         if option == "play": Window.Event_trigger["Start"] = True
         if option == "pause": Window.Event_trigger["Pause"] = True
@@ -91,9 +90,6 @@ while(Window.run):
     ShowFrame()
 
     TriggerOptions(current_option)
-    
-
-
 
     frame_end_time = time.perf_counter() - frame_start
     if (frame_end_time < frame_time):

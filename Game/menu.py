@@ -7,10 +7,9 @@ from button import button
 class menu:
     def __init__(self,w,h):
 
-        index = 0
         self.width = w 
         self.heigh = h
-        self.x = 100
+        self.x = 0
         self.y = 0
 
         self.selected_button = 0

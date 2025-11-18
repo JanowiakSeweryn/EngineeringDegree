@@ -74,10 +74,9 @@ class sound_effect:
             self.paused_playing = True
 
     def StopMusic(self):
-        if not self.start_playing:
-            mix.Mix_Pause(self.sound_channel)
-            self.start_playing = True
-            self.paused_playing = False
+        mix.Mix_Pause(self.sound_channel)
+        self.start_playing = True
+        self.paused_playing = False
 
     def SetLevel(self,impuls):
         self.Level_pattern.append(impuls) 
