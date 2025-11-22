@@ -6,11 +6,11 @@ from rectangle import decoration
 import copy
 import os
 
-class sound_effect:
+class LevelClass:
     def __init__(self,sound_filename,level_filename):
         
 
-        mix.Mix_OpenAudio(44100,mix.MIX_DEFAULT_FORMAT,2,2048)
+        self.mixer = mix.Mix_OpenAudio(44100,mix.MIX_DEFAULT_FORMAT,2,2048)
         self.sound = mix.Mix_LoadWAV(sound_filename)
         self.sound_channel = 1
         self.start_playing = True
@@ -102,6 +102,8 @@ class sound_effect:
         with open(self.filename,"r") as f:
             data = json.load(f)
         self.Level_play = data["Level_pattern"]
+        
+        #number of failed blokcs to check to fail the level
         self.fail_threshold = 0.01667*len(self.Level_play)*0.1
     
     def FailedLevel(self):

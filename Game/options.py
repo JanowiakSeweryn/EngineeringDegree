@@ -3,6 +3,7 @@
 import sys
 sys.path.insert(0,"../")
 
+from Levels import LEVELS
 from get_data import GESTURES
 
 OPTIONS = {
@@ -21,8 +22,23 @@ MENU_OPTION = [
 ]
 
 MAIN_SCREEN_OPTION = [
-    "play"
+    "play" ,
+    "selectlevel",
+    "exit"
 ]
+
+OPENING_SCREEN_OPTION = [
+    "return2home"
+]
+
+lvlopt = []
+for lvl in LEVELS:
+    lvlopt.append(lvl.filename)
+
+SELECT_LEVEL_OPTION = lvlopt
+
+
+
 
 
 gest_iter = {}

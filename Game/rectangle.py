@@ -66,4 +66,15 @@ class decoration:
         if type(self.sprite) is not int:
             renderer.copy(self.sprite.texture,None,self.rect)
         self.move()
+
+
+def get_sprite(filename,renderer):
+    
+    if os.path.exists(filename):
+        factory = sdl2.ext.SpriteFactory(sdl2.ext.TEXTURE, renderer=renderer)
+        sprite = factory.from_image(filename)
+        return sprite
+    
+    else: 
+        return None
         

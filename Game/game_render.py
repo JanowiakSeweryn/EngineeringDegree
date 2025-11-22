@@ -11,15 +11,18 @@ sys.path.insert(0,"../")
 from gestdetect import gesture_detection
 from window_app import Win, WINDOW_HEIGHT, WINDOW_WIDTH
 from menu import menu
-from level_class import sound_effect
+from sound import sound_play
+from animation import center_rect
+from Levels import LEVELS
 
-from options import MENU_OPTION,MAIN_SCREEN_OPTION,GESTURES_INPUT
+from options import MENU_OPTION,MAIN_SCREEN_OPTION,GESTURES_INPUT,SELECT_LEVEL_OPTION,OPENING_SCREEN_OPTION
 
-import threading
 import cv2
 import time
 import sdl2
 import numpy as np
+ 
+import sdl2.sdlmixer as mix
 
 SONG ="remastered1.wav"
 LEVEL_NAME = "Level1"
@@ -31,21 +34,67 @@ Window = Win()
 
 song_file = f"sound/{SONG}"
 
-#objects:
+#scenes:
 Menu = menu(WINDOW_WIDTH,WINDOW_HEIGHT)
-Main_screen = menu(1200,1080)
-Level = sound_effect(song_file.encode("utf-8"),f"levels/{LEVEL_NAME}.json")
-Clasifier = gesture_detection()
+Main_screen = menu(WINDOW_WIDTH,WINDOW_HEIGHT)
+Select_level_scene = menu(WINDOW_WIDTH,WINDOW_HEIGHT)
+
+opening_scene = menu(WINDOW_WIDTH,WINDOW_HEIGHT)
+opening_scene.render_option = False
+
+#classifiers
+Clasifier = gesture_detection(dynamic=False)
+Clasifier_dynamic = gesture_detection(dynamic=True)
+
+#sound_effects:
+butt_chunk = sound_play(2,b"sound/change_button.wav")
+main_screen_theme = sound_play(3,b"sound/hand_trouble_main.wav")
+
+main_screen_theme.start_playing = True
+menu_theme = sound_play(4,b"sound/pause.wav")
+menu_theme.start_playing = True
+
+intro_theme = sound_play(5,b"sound/intro_song.wav")
+
+
+
+current_level = 0 
+
+def LoadLevels():
+    for lvl in LEVELS:
+        lvl.LoadLevel()
+        lvl.LoadPng(Window.renderer,"sprites/of_01.jpeg")
+        lvl.Loadblocs_png(Window.renderer)
 
 #load sprites buttons 
 def InitializeGame():
+
+    sdl2.sdlttf.TTF_Init()
+    font = sdl2.sdlttf.TTF_OpenFont(b"fonts/ARIAL.TTF", 32)
+    if not font:
+        print("Font load error:", sdl2.sdlttf.TTF_GetError())
+        sys.exit()
+
     Menu.CreateOptions(MENU_OPTION,Window.renderer)
+    
+    Main_screen.button.center = True
+    Main_screen.button.rect = center_rect(Main_screen.button.rect)
     Main_screen.CreateOptions(MAIN_SCREEN_OPTION,Window.renderer)
     Main_screen.color = sdl2.ext.Color(100,0,100)
-    Main_screen.paused = True
-    Level.LoadLevel()
-    Level.LoadPng(Window.renderer,"sprites/of_01.jpeg")
-    Level.Loadblocs_png(Window.renderer)
+    
+    Main_screen.LoadBackgroundPNG("sprites/main_screen.png",Window.renderer)
+    Select_level_scene.CreateOptions(SELECT_LEVEL_OPTION,Window.renderer)
+    Select_level_scene.color = sdl2.ext.Color(150,150,0)
+    Select_level_scene.LoadText(Window.renderer,font)
+
+    opening_scene.LoadBackgroundPNG("sprites/opening_scene.png",Window.renderer)
+    opening_scene.CreateOptions(OPENING_SCREEN_OPTION,Window.renderer)
+    opening_scene.color = sdl2.ext.Color(255,255,255)
+
+    LoadLevels()
+    # Level.LoadLevel()
+    # Level.LoadPng(Window.renderer,"sprites/of_01.jpeg")
+    # Level.Loadblocs_png(Window.renderer)
 
 run = True
 current_gest = None
@@ -56,18 +105,28 @@ current_frame = None
 ClickButton = False
 
 
+current_gest_dynamic = None
+
+
 def gest_detect():
     global current_gest 
     global current_frame
     global prev_gest
     global prevframe_gest
     global ClickButton
+    global current_gest_dynamic
+
+    tick_start = 0
+    tick_time = 0
+    tick_reaction_time = 1.0#in seconds
 
     iter = 0
 
     gest_inputs = ["fist_open","left_thumb","right_thumb","uk_3"]
 
-    while(run):
+    while(Window.run):
+
+        tick_start = time.perf_counter()
 
         prev_gest = current_gest
 
@@ -76,36 +135,49 @@ def gest_detect():
         res_frame = Clasifier.frame
         current_frame = res_frame
 
+        # result_d = Clasifier_dynamic.clasify(frame=current_frame)
+        # current_gest_dynamic = result_d
 
         for g in gest_inputs:
             if current_gest == g:
-                if prev_gest == current_gest: iter += 1
+                if prev_gest == current_gest: iter += tick_time
                 else: iter = 0
                 
-                if(iter > 30):
+                if g == "fist_open" or g == "uk_3": tick_reaction_time = 1.2
+                else: tick_reaction_time = 0.8
+                if(iter > tick_reaction_time):
                     iter = 0
                     GESTURES_INPUT[g] = True
-                
+        
+        tick_time = time.perf_counter() - tick_start
 
-
-#*******
-# threading.Thread(target=gest_detect,daemon=True).start()
+        # print(current_gest_dynamic)
 
 def CV_buttons():
+
+    global intro
 
     # print("deb::")
     # for f in GESTURES_INPUT:
     #     print(f)
+    
+    if current_gest_dynamic is not None:
+        if current_gest_dynamic == "six-seven":
+            print("6767676767676767!!!")
 
     if current_gest is not None:
         if GESTURES_INPUT[current_gest]:
-            print("clickbutton is trueee!!")
+    
             GESTURES_INPUT[current_gest] = False
             if current_gest == "fist_open" : Window.Event_trigger["ClickButton"] = True
             if current_gest == "left_thumb" : Window.Event_trigger["Left"] = True
             if current_gest == "right_thumb" : Window.Event_trigger["Right"] = True
             if current_gest == "uk_3" : Window.Event_trigger["Pause"] = True
-            
+
+            butt_chunk.start_playing = True
+
+    butt_chunk.PlayMusic()
+
 
 #InitializedFrame and ShowFrame is used for all scenes and are const 
 def InitializeFrame():
@@ -118,9 +190,45 @@ def ShowFrame():
     Window.Render_present()
     Window.Reset_Events()
 
+#displays window 
     if current_frame is not None:
         cv2.imshow("camera",current_frame)
         cv2.waitKey(1)
+
+def SelectLevelScene():
+    global current_level
+
+    # InitializeFrame()
+    LEVELS[current_level].ResetLevel()
+    LEVELS[current_level].StopMusic()
+
+    Select_level_scene.Select_button(Window.Event_trigger["Left"], 
+        Window.Event_trigger["Right"],
+        Window.Event_trigger["ClickButton"])
+    Select_level_scene.Render(Window.renderer)
+
+    current_level = Select_level_scene.option.index(Select_level_scene.current_option)
+    print(current_level)
+
+
+intro_theme.start_playing = True
+
+def OpeningScene():
+    
+    if current_gest == "fist_open": 
+        opening_scene.animate_intro()
+        if not mix.Mix_Playing(5):
+            intro_theme.start_playing = True
+        intro_theme.PlayMusic()
+    else:
+        intro_theme.StopMusic()
+        opening_scene.intro_rect.y = WINDOW_HEIGHT
+
+    opening_scene.Select_button(Window.Event_trigger["Left"], 
+        Window.Event_trigger["Right"],
+        Window.Event_trigger["ClickButton"])
+    
+    opening_scene.Render(Window.renderer)
 
 
 def PlayScene():
@@ -139,10 +247,10 @@ def PlayScene():
     if Window.Event_trigger["Right"] : click = 3
     if Window.Event_trigger["Down"] : click = 4
 
-    Level.PlayMusic()
-    Level.PlayLevel(click)
-    Level.Draw_blocs(Window.renderer)
-    Level.FailedLevel() #check if current fails are enough to fail full level
+    LEVELS[current_level].PlayMusic()
+    LEVELS[current_level].PlayLevel(click)
+    LEVELS[current_level].Draw_blocs(Window.renderer)
+    LEVELS[current_level].FailedLevel() #check if current fails are enough to fail full level
     # if Level.level_failed:
     #     Level.disp(Window.renderer)
     #     Level.PauseMusic()
@@ -152,7 +260,12 @@ def PlayScene():
 def PauseSceneRender():
     
     # InitializeFrame()
-    Level.PauseMusic()
+
+    if not mix.Mix_Playing(4):
+        menu_theme.start_playing = True
+
+    LEVELS[current_level].PauseMusic()
+
     Menu.Select_button(Window.Event_trigger["Left"], 
         Window.Event_trigger["Right"],
         Window.Event_trigger["ClickButton"])
@@ -160,10 +273,17 @@ def PauseSceneRender():
     
     # ShowFrame()
 
+
 def MainSceneRender():
+
     # InitializeFrame()
-    Level.ResetLevel()
-    Level.StopMusic()
+    LEVELS[current_level].ResetLevel()
+    LEVELS[current_level].StopMusic()
+
+    if not mix.Mix_Playing(3):
+        main_screen_theme.start_playing = True
+
+    main_screen_theme.PlayMusic()
 
     Main_screen.Select_button(Window.Event_trigger["Left"],
         Window.Event_trigger["Right"],
@@ -174,8 +294,8 @@ def MainSceneRender():
     # ShowFrame()
 
 def RestartLevel():
-    Level.ResetLevel()
-    Level.StopMusic()
+    LEVELS[current_level].ResetLevel()
+    LEVELS[current_level].StopMusic()
     
 
 def TriggerButtons(scene):
@@ -183,14 +303,18 @@ def TriggerButtons(scene):
     inp = 0 #user input
     if scene == "mainscene": inp = Main_screen.Trigger_button()
     if scene == "pausescene": inp = Menu.Trigger_button()
+    if scene == "selectlevelscene" : inp = Select_level_scene.Trigger_button()
+    if scene == "openingscene" : inp = opening_scene.Trigger_button()
 
     # print(f"inp = {inp}")
     return inp
 
 
 SCENES = {
+        "openingscene" : OpeningScene,
         "mainscene": MainSceneRender,
         "playscene": PlayScene,
         "pausescene" : PauseSceneRender,
+        "selectlevelscene" : SelectLevelScene,
         }
 

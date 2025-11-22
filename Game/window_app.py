@@ -2,10 +2,10 @@ import sdl2
 import sdl2.ext
 import time
 from rectangle import decoration
-from level_class import sound_effect
+from level_class import LevelClass
 
 
-WINDOW_WIDTH = 1200
+WINDOW_WIDTH = 1400
 WINDOW_HEIGHT = 1080
 BPM = 120
 
@@ -42,7 +42,8 @@ class Win:
             "Pause":False,
             "ClickButton" :False,
             "Return2Main": False ,
-            "Resume" : False
+            "Resume" : False,
+            "selectlevel": False
         }
 
         self.blocks = []
@@ -83,6 +84,9 @@ class Win:
 
                 if event.key.keysym.sym == sdl2.SDLK_m:
                     self.Event_trigger["Return2Main"] = True
+
+                if event.key.keysym.sym == sdl2.SDLK_p:
+                    self.Event_trigger["selectlevel"] = True
 
     def Render_start(self):
         

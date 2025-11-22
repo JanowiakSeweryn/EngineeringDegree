@@ -1,13 +1,14 @@
 
 import sdl2
-import sdl2.sdlmixer as mix
 from rectangle import decoration
+from animation import center_rect
 
 class button(decoration):
     def __init__(self, color, x, y, width, height):
         self.selected = False
         self.init_color = color
         super().__init__(color, x, y, width, height)
+        self.center = False
 
     def __copy__(self):
         return super().__copy__()
@@ -22,8 +23,9 @@ class button(decoration):
 
 
     def draw(self, renderer):
-        self.rect.x = self.index*300
-
+        if self.center:
+            self.rect = center_rect(self.rect)
+            
         self.rect2.x, self.rect2.y , self.rect2.w ,self.rect2.h = self.center_rect(self.rect.x, self.rect.y, self.rect.w, self.rect.h, 20)
         
         renderer.fill(self.rect2,self.color)

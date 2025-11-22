@@ -1,15 +1,15 @@
 from window_app import Win
 import time
-from level_class import sound_effect
+from level_class import LevelClass
 
 
-LEVEL_NAME = "Level1"
-LEVEL_SONG = "remastered1.wav"
+LEVEL_NAME = "Level2"
+LEVEL_SONG = "diddy.mp3"
 
 
 song_file = f"sound/{LEVEL_SONG}"
 
-Level = sound_effect(song_file.encode("utf-8"),f"levels/{LEVEL_NAME}.json")
+Level = LevelClass(song_file.encode("utf-8"),f"levels/{LEVEL_NAME}.json")
 
 FPS = 60
 frame_time = 1/FPS
@@ -24,25 +24,30 @@ frame_start = 0
 def Create_Level(): 
 
     click = 0
-    if Window.Left : click = 1
-    if Window.Up : click = 2
-    if Window.Right : click = 3
-    if Window.Down : click = 4
+    if Window.Event_trigger["Left"] : click = 1
+    if Window.Event_trigger["Up"] : click = 2
+    if Window.Event_trigger["Right"] : click = 3
+    if Window.Event_trigger["Down"] : click = 4
 
     Level.SetLevel(click)
 
+Window.run = True
+
+
+
+    
 while(Window.run):
     frame_start = time.perf_counter()
-    Window.Events()
 
+    Window.Events()
     Window.Render_start()
-    if Window.Start:
+    if Window.Event_trigger["Start"]:
         print(frame)
         frame += 1
-        if(frame >= 60):
-            Level.PlayMusic()
-            Create_Level()
-
+        
+    if(frame >= 60):
+        Level.PlayMusic()
+        Create_Level()
 
     Window.Render_present()
 
@@ -51,7 +56,11 @@ while(Window.run):
     frame_end_time = time.perf_counter() - frame_start
     if (frame_end_time < frame_time):
         time.sleep(frame_time - frame_end_time)
-   
+
+
 Level.SaveLevel(15)
+
+#clearing the audio
 Level.clean()
+
 Window.Destroy()
