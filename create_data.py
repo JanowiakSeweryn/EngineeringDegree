@@ -6,17 +6,28 @@
 #3 Start propram 
 #4 when ready to take photos click the s key on your keyboard
 #5 program automaticaly exit after compliting task
-GESTURE_NAME = "right_thumb" 
+GESTURE_NAME = "peace" 
 DATA_SIZE = 350
 ADDITIONAL_DATA_SIZE = 100 #if you want to add new data to existing gesture
+
+#change it to false if you want to static gestures
+#change it to true if you want to save data for dynamic gestures
+DYNAMIC_DATA = False
+
+#how many frames does each dynamic gesture have
+FRAMES_DG = 30
 
 import mediapipe as mp
 import cv2
 import os
 import sys
+import time
 
-WIN_WIDTH = 1920
-WIN_HEIGHT = 1080
+WIN_WIDTH = 600
+WIN_HEIGHT = 480
+
+# WIN_WIDTH = 1920
+# WIN_HEIGHT = 1080
 FPS = 60
 
 cap = cv2.VideoCapture(0)
@@ -30,8 +41,7 @@ frame_number = 0
 
 
 # create directory
-GESTURE_DIR = os.path.join(current_dir,f'{GESTURE_NAME}') 
-
+GESTURE_DIR = os.path.join(current_dir,f'Gestures/{GESTURE_NAME}') 
 
 add_data = 0
 
@@ -44,7 +54,10 @@ else:
 start = False
 
 i = 0
+
+sample = 0
 while(True):
+
     ret, frame = cap.read()
 
     src = cv2.flip(frame,1)
@@ -56,17 +69,45 @@ while(True):
        start = True
     
     if start:
-        if(frame_number < DATA_SIZE + add_data):
-            frame_number += 1
 
-            sys.stdout.write(f'{100*frame_number/DATA_SIZE}% done')
-            sys.stdout.flush()
-            print()
+        if not DYNAMIC_DATA:
+            if(frame_number < DATA_SIZE + add_data):
+                frame_number += 1
 
-            filename = f'{current_dir}/{GESTURE_NAME}/fo_{frame_number}.png'
-            cv2.imwrite(filename,frame)
+                sys.stdout.write(f'{100*frame_number/DATA_SIZE}% done')
+                sys.stdout.flush()
+                print()
+
+                filename = f'{current_dir}/Gestures/{GESTURE_NAME}/fo_{frame_number}.png'
+                cv2.imwrite(filename,frame)
+            else:
+                break
+
         else:
-            break
+            if sample == 0  and frame_number == 0:
+                time.sleep(2)
+                print("GO")
+
+            if sample < DATA_SIZE + add_data:
+                frame_number += 1
+                filename = f'{current_dir}/Gestures{GESTURE_NAME}/s{sample}_f{frame_number}.png'
+                cv2.imwrite(filename,frame)
+
+                if frame_number > FRAMES_DG:
+                    frame_number = 0
+                    sample += 1
+                    time.sleep(1)
+                    print(f"NEXT_SAMPLE_GO{sample}")
+                    # winsound.Beep(1600,100)
+                    
+
+
+
+
+
+            
+
+
 
 
 

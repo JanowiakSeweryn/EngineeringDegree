@@ -26,6 +26,7 @@ from game_render import main_screen_theme,menu_theme
 threading.Thread(target=gest_detect,daemon=True).start()
 
 
+# scene_index = "selectlevelscene"
 scene_index = "openingscene"
 # scene_index = "mainscene"
 prev_scene_index = "mainscene"
@@ -39,7 +40,6 @@ def get_sceene_index():
     global scene_index
     global change_scene
     global prev_scene_index
-
 
     if Window.Event_trigger["Start"] or Window.Event_trigger["Pause"] or Window.Event_trigger["Return2Main"] :
         change_scene = True

@@ -79,7 +79,7 @@ class menu:
     #load text affter call of the createOptioin, otherwise no text will be renderered:
     def LoadText(self,renderer,font):
         for option in self.option:
-            self.text_textures.append(GetTexture(renderer,font,option[:-5],color=SDL_Color(0,0,0)))
+            self.text_textures.append(GetTexture(renderer,font,option[7:-5],color=SDL_Color(0,0,0)))
         self.render_text = True
     
     def animate_intro(self):

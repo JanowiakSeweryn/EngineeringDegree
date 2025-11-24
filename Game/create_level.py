@@ -3,10 +3,15 @@ import time
 from level_class import LevelClass
 
 
-LEVEL_NAME = "Level2"
-LEVEL_SONG = "diddy.mp3"
+LEVEL_NAME = "Level3"
+LEVEL_SONG = "CarTrouble.mp3"
 
+#level dificulty 
+#when level is very dynamic it requas LEVEL easablility to very small
+#it number of additional frames to to "threshould" the level 
+#read more at README code
 
+LEVEL_EASEALITY = 10
 song_file = f"sound/{LEVEL_SONG}"
 
 Level = LevelClass(song_file.encode("utf-8"),f"levels/{LEVEL_NAME}.json")
@@ -58,7 +63,7 @@ while(Window.run):
         time.sleep(frame_time - frame_end_time)
 
 
-Level.SaveLevel(15)
+Level.SaveLevel(LEVEL_EASEALITY)
 
 #clearing the audio
 Level.clean()

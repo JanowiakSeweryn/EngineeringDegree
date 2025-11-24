@@ -44,7 +44,6 @@ opening_scene.render_option = False
 
 #classifiers
 Clasifier = gesture_detection(dynamic=False)
-Clasifier_dynamic = gesture_detection(dynamic=True)
 
 #sound_effects:
 butt_chunk = sound_play(2,b"sound/change_button.wav")
@@ -70,7 +69,7 @@ def LoadLevels():
 def InitializeGame():
 
     sdl2.sdlttf.TTF_Init()
-    font = sdl2.sdlttf.TTF_OpenFont(b"fonts/ARIAL.TTF", 32)
+    font = sdl2.sdlttf.TTF_OpenFont(b"fonts/ARIAL.TTF", 72)
     if not font:
         print("Font load error:", sdl2.sdlttf.TTF_GetError())
         sys.exit()
@@ -92,9 +91,7 @@ def InitializeGame():
     opening_scene.color = sdl2.ext.Color(255,255,255)
 
     LoadLevels()
-    # Level.LoadLevel()
-    # Level.LoadPng(Window.renderer,"sprites/of_01.jpeg")
-    # Level.Loadblocs_png(Window.renderer)
+
 
 run = True
 current_gest = None
@@ -134,9 +131,6 @@ def gest_detect():
         current_gest = result
         res_frame = Clasifier.frame
         current_frame = res_frame
-
-        # result_d = Clasifier_dynamic.clasify(frame=current_frame)
-        # current_gest_dynamic = result_d
 
         for g in gest_inputs:
             if current_gest == g:
@@ -202,14 +196,15 @@ def SelectLevelScene():
     LEVELS[current_level].ResetLevel()
     LEVELS[current_level].StopMusic()
 
+    if not mix.Mix_Playing(3):
+        main_screen_theme.start_playing = True
+
     Select_level_scene.Select_button(Window.Event_trigger["Left"], 
         Window.Event_trigger["Right"],
         Window.Event_trigger["ClickButton"])
     Select_level_scene.Render(Window.renderer)
 
     current_level = Select_level_scene.option.index(Select_level_scene.current_option)
-    print(current_level)
-
 
 intro_theme.start_playing = True
 
@@ -231,14 +226,17 @@ def OpeningScene():
     opening_scene.Render(Window.renderer)
 
 
+level_completed = False
 def PlayScene():
+
+    global level_completed
 
     # InitializeFrame()
 
     click = 0
 
     if current_gest == "zero" or current_gest == "kon" : click = 1
-    if current_gest == "uk_3" : click = 2
+    if current_gest == "peace" : click = 2
     if current_gest == "german_3" : click = 3
     if current_gest == "fist_closed": click = 4
     
@@ -251,9 +249,14 @@ def PlayScene():
     LEVELS[current_level].PlayLevel(click)
     LEVELS[current_level].Draw_blocs(Window.renderer)
     LEVELS[current_level].FailedLevel() #check if current fails are enough to fail full level
-    # if Level.level_failed:
-    #     Level.disp(Window.renderer)
-    #     Level.PauseMusic()
+    if LEVELS[current_level].level_failed:
+        # LEVELS[current_level].disp(Window.renderer)
+        # LEVELS[current_level].PauseMusic()
+        LEVELS[current_level].level_failed = False
+        time.sleep(1)
+        RestartLevel()
+    if LEVELS[current_level].level_succeded:
+        level_completed = True
     
     ShowFrame()
 

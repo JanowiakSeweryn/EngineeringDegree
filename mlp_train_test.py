@@ -13,6 +13,9 @@ from get_data import split_data
 from get_data import GESTURES
 import os
 import numpy as np
+import pandas as pd
+
+from sklearn.metrics import confusion_matrix
 
 DYNAMIC = False #for time gestures 
 
@@ -21,15 +24,15 @@ module_dir = os.path.dirname(__file__)
 file_path = os.path.join(module_dir, f"{NET_FILE}.pth")
 
 
-input,target = read_json()
+input_data,target_data = read_json()
 
-input_train, target_train, input_test,target_test = split_data(input,target,0.8)
+input_train, target_train, input_test,target_test = split_data(input_data,target_data,0.8)
 
 input_train, target_train, input_val,target_val = split_data(input_train,target_train,0.75)
 
 errors = []
 
-print(len(input))
+print(len(input_data))
 print(len(input_train))
 print(len(input_test))
 print(len(input_val))
@@ -51,7 +54,7 @@ def TestTFPN(custom_net):
             gest = GESTURES[np.argmax(y)] #target gesture as string
             
             custom_net.input_change(x)
-            y_pred = custom_net.predict()
+            y_p = custom_net.predict()
 
             net_gest = GESTURES[custom_net.gesture_detected_index] #net prediction gesture as a string
             
@@ -66,6 +69,22 @@ def TestTFPN(custom_net):
     return tp, tn, fp, fn
 
 
+
+def get_predictions(custom_net):
+    y_true = []
+    y_pred = []
+    for x,y in zip(input_test,target_test):
+        gest = GESTURES[np.argmax(y)] #target gesture as string
+        custom_net.input_change(x)
+        y_p = custom_net.predict()
+        net_gest = GESTURES[custom_net.gesture_detected_index] 
+
+        y_true.append(gest)
+        y_pred.append(net_gest)
+
+    return y_true, y_pred
+
+        
 for i in range(1):
 
     NET = mlp([40,32])
@@ -79,7 +98,6 @@ for i in range(1):
     sns.lineplot(x = NET.epochs,y=NET.Loss)
 
 
-
 print("final errors:")
 for i in range(len(errors)):
     print(f'{i} errors : {errors[i]}')
@@ -91,6 +109,9 @@ else: print("data analised properly!")
 
 TPR = {}
 TNR = {}
+FNR = {}
+FPR = {}
+
 
 lines = []
 
@@ -98,13 +119,30 @@ for i,gest in enumerate(GESTURES):
     tpr = TP[i]/(TP[i]+FN[i])
     tnr = TN[i]/(TN[i]+TP[i])
 
+    fpr = FN[i]/(FN[i]+TP[i])
+    fnr = FN[i]/(FN[i]+TP[i])
+
     TPR[gest] = tpr
     TNR[gest] = tnr
+
+    FNR[gest] = fnr
+    FPR[gest] = fpr
 
     print(f"{gest} TPR={tpr}, TNR={tnr}")
     lines.append(f"{gest} TPR={tpr}, TNR={tnr}")
 
-np.argmin(TPR)
+
+y_true, y_pred = get_predictions(NET)
+
+cm = confusion_matrix(y_true, y_pred, labels=GESTURES)
+
+df = pd.DataFrame(cm,index=GESTURES,columns=GESTURES)
+
+
+plt.figure()
+sns.heatmap(df, annot=True, cmap="Blues",vmax=0.2*len(input_data)/(len(GESTURES)))
+plt.title("Performance Metrics per Class")
+
 
 lines.append(" ")
 print()

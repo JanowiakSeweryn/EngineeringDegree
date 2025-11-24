@@ -6,6 +6,7 @@ from rectangle import decoration
 import copy
 import os
 
+
 class LevelClass:
     def __init__(self,sound_filename,level_filename):
         
@@ -28,13 +29,17 @@ class LevelClass:
         self.block_down = decoration(color,300,0,150,150)
         self.block_left = decoration(color,100,0,150,150)
 
+        self.flash_rect = sdl2.SDL_Rect(0,0,1920,1080)
+        self.start_flash = False
+        self.flash_frame = 0
+    
+
         #if player have click the right pattern 
         self.Succeded = False
         self.Failed = False
         
         self.succes_rate = 0
         self.fail_rate = 0
-
 
         #mistakes can hapen 1 time per 10 second of the level
         self.fail_threshold = 0
@@ -49,11 +54,20 @@ class LevelClass:
         pass
 
     def Loadblocs_png(self,renderer):
-        self.block_down.load_png("sprites/down.png",renderer)
-        self.block_up.load_png("sprites/up.png",renderer)
-        self.block_left.load_png("sprites/left.png",renderer)
-        self.block_right.load_png("sprites/right.png",renderer)
+        self.block_down.load_png("sprites/closed_fist.png",renderer)
+        self.block_up.load_png("sprites/peace.png",renderer)
+        self.block_left.load_png("sprites/zero.png",renderer)
+        self.block_right.load_png("sprites/german_3.png",renderer)
         print("PNG INITIALIZED")
+
+    def Flash(self,renderer,frame):
+        flash_time = 20
+        alfa = ((flash_time - frame)/flash_time)*155
+        flash_color = sdl2.ext.Color(0,255,0,alfa)
+
+        if frame < flash_time:
+            renderer.fill([self.flash_rect],flash_color)
+
 
     def PlayMusic(self):
 
@@ -109,6 +123,7 @@ class LevelClass:
     def FailedLevel(self):
         if self.fail_rate > self.fail_threshold:
             self.level_failed = True
+            self.fail_rate = 0
 
 
     def PlayLevel(self,click):
@@ -182,6 +197,17 @@ class LevelClass:
     def Draw_blocs(self,renderer):
         self.Create_blocs()
 
+
+        if self.Succeded:
+            self.start_flash = True
+
+        # if self.start_flash:
+        #     self.Flash(renderer,self.flash_frame)
+        #     self.flash_frame += 1
+        
+        # if self.flash_frame > 20:
+        #     self.start_flash = False
+        #     self.flash_frame = 0
         
         self.Failed = False
         self.Succeded = False
@@ -190,7 +216,7 @@ class LevelClass:
             b.draw(renderer)
 
         self.Destroy_blocs()
-        
+
     
     def clean(self):
         mix.Mix_FreeChunk(self.sound)
