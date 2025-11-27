@@ -2,7 +2,8 @@ import sdl2
 import sdl2.sdlmixer as mix
 import sys
 import json
-from rectangle import decoration
+from rectangle import decoration,BAR_HEIGH
+from rectangle import BLOCK_FALL_TIME
 import copy
 import os
 
@@ -44,6 +45,7 @@ class LevelClass:
         #mistakes can hapen 1 time per 10 second of the level
         self.fail_threshold = 0
         self.level_failed = False
+        self.level_succeded = False
         self.filename = level_filename
 
         self.blocs = [] #list of blocs to draw
@@ -97,13 +99,16 @@ class LevelClass:
 
     def SaveLevel(self,threshold):
         self.Blocs_pattern = self.Level_pattern
+        click_length = 0 
 
         for i in range(len(self.Level_pattern)):
+        
             if (self.Level_pattern[i] != 0):
+                
                 for j in range(threshold):
                     self.Level_pattern[i-j] = self.Level_pattern[i]
                     self.Level_pattern[i-j] = self.Level_pattern[i]
-    
+
         self.Level = {
             "Blocs_pattern" : self.Blocs_pattern,
             "Level_pattern" : self.Level_pattern,
@@ -127,13 +132,15 @@ class LevelClass:
 
 
     def PlayLevel(self,click):
+
         if self.level_index <  len(self.Level_play):
 
             if len(self.blocs) != 0:
                 self.current_block = max(self.blocs,key=lambda d: d.rect.y)
             
+            # if click != 0 and self.Level_play[self.level_index] != 0 :
             if click != 0 and self.Level_play[self.level_index] != 0 and not self.current_block.checked:
-                if self.Level_play[self.level_index] == click:
+                if self.Level_play[self.level_index] == click :
                     self.Succeded = True
 
                     print(f'succes {self.succes_rate}')
@@ -158,6 +165,10 @@ class LevelClass:
                 print(f"FAILED!{self.fail_rate}")
                 
             self.level_index += 1
+        else:
+            if self.fail_rate < self.fail_threshold:
+                #succeded leve
+                self.level_succeded = True
     
     def ResetLevel(self):
         self.level_index = 0
@@ -167,12 +178,13 @@ class LevelClass:
         self.blocs = [b for b in self.blocs if not b.reset()]
 
     def Create_blocs(self):
-        if self.level_index+30 < len(self.Level_play):
-            if not self.Level_play[self.level_index+30] == 0 and not self.draw_block :
-                x = self.get_block_pos(self.Level_play[self.level_index+30])
+        frame_speed=BLOCK_FALL_TIME
+        if self.level_index+frame_speed < len(self.Level_play):
+            if not self.Level_play[self.level_index+frame_speed] == 0 and not self.draw_block :
+                x = self.get_block_pos(self.Level_play[self.level_index+frame_speed])
                 self.blocs.append(x)
                 self.draw_block = True
-            if self.Level_play[self.level_index+30] == 0 :
+            if self.Level_play[self.level_index+frame_speed] == 0 :
                 self.draw_block = False
  
     def get_block_pos(self,index):

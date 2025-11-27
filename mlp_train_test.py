@@ -1,7 +1,7 @@
 #uncomment one of the following :
 
-from torch_nn import mlp #use torch 
-# from mlp_custom import mlp #use my own neural network
+# from torch_nn import mlp #use torch 
+from mlp_custom import mlp #use my own neural network
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -88,76 +88,93 @@ def get_predictions(custom_net):
 for i in range(1):
 
     NET = mlp([40,32])
-    NET.Train(input_train,target_train,1000,0.005)
-    errors.append(NET.final_net_error)
+    NET.Train(input_train,target_train,500,0.001)
+
+    print(len(NET.epochs),len(NET.Loss))
+
+ 
     plt.figure()
     sns.lineplot(x = NET.epochs,y=NET.Loss)
-    #validation
-    NET.Train(input_val,target_val,1000,0.005)
+    # validation
+
+    NET.Train(input_val,target_val,500,0.001)
     errors.append(NET.final_net_error)
     sns.lineplot(x = NET.epochs,y=NET.Loss)
 
+NET.save_weights()
 
 print("final errors:")
 for i in range(len(errors)):
     print(f'{i} errors : {errors[i]}')
 
-TP,TN,FP,FN = TestTFPN(NET)
 
-if len(input_test) != TP[0]+TN[0]+FP[0]+FN[0]: print("error!")
-else: print("data analised properly!")
-
-TPR = {}
-TNR = {}
-FNR = {}
-FPR = {}
-
-
-lines = []
-
-for i,gest in enumerate(GESTURES):
-    tpr = TP[i]/(TP[i]+FN[i])
-    tnr = TN[i]/(TN[i]+TP[i])
-
-    fpr = FN[i]/(FN[i]+TP[i])
-    fnr = FN[i]/(FN[i]+TP[i])
-
-    TPR[gest] = tpr
-    TNR[gest] = tnr
-
-    FNR[gest] = fnr
-    FPR[gest] = fpr
-
-    print(f"{gest} TPR={tpr}, TNR={tnr}")
-    lines.append(f"{gest} TPR={tpr}, TNR={tnr}")
-
-
-y_true, y_pred = get_predictions(NET)
-
-cm = confusion_matrix(y_true, y_pred, labels=GESTURES)
-
-df = pd.DataFrame(cm,index=GESTURES,columns=GESTURES)
-
-
-plt.figure()
-sns.heatmap(df, annot=True, cmap="Blues",vmax=0.2*len(input_data)/(len(GESTURES)))
-plt.title("Performance Metrics per Class")
-
-
-lines.append(" ")
-print()
-lines.append(f"best TPR: {max(TPR.items(), key=lambda x: x[1])}")
-lines.append(f"worst TPR: {min(TPR.items(), key=lambda x: x[1])}")
-lines.append(f"best TNR: {max(TNR.items(), key=lambda x: x[1])}")
-lines.append(f"worst TNR: {min(TNR.items(), key=lambda x: x[1])}")
-
-with open("results.txt", "w") as f:
-    for l in lines:
-        f.write(l + "\n")
+def DispConfussionMatrix(custom_net,filename):
+    TP,TN,FP,FN = TestTFPN(custom_net)
 
 
 
-NET.save_weights(dynamic=DYNAMIC)
+    if len(input_test) != TP[0]+TN[0]+FP[0]+FN[0]: print("error!")
+    else: print("data analised properly!")
+
+    TPR = {}
+    TNR = {}
+    FNR = {}
+    FPR = {}
+
+
+    lines = []
+
+    for i,gest in enumerate(GESTURES):
+        tpr = TP[i]/(TP[i]+FN[i])
+        tnr = TN[i]/(TN[i]+TP[i])
+
+        fpr = FN[i]/(FN[i]+TP[i])
+        fnr = FN[i]/(FN[i]+TP[i])
+
+        TPR[gest] = tpr
+        TNR[gest] = tnr
+
+        FNR[gest] = fnr
+        FPR[gest] = fpr
+
+        print(f"{gest} TPR={tpr}, TNR={tnr}")
+        lines.append(f"{gest} TPR={tpr}, TNR={tnr}")
+
+
+    y_true, y_pred = get_predictions(NET)
+
+    cm = confusion_matrix(y_true, y_pred, labels=GESTURES)
+
+    df = pd.DataFrame(cm,index=GESTURES,columns=GESTURES)
+
+    plt.figure()
+    sns.heatmap(df, annot=True, cmap="Blues",vmax=0.2*len(input_data)/(len(GESTURES)))
+    plt.title("Performance Metrics per Class")
+
+
+    lines.append(" ")
+    print()
+    lines.append(f"best TPR: {max(TPR.items(), key=lambda x: x[1])}")
+    lines.append(f"worst TPR: {min(TPR.items(), key=lambda x: x[1])}")
+    lines.append(f"best TNR: {max(TNR.items(), key=lambda x: x[1])}")
+    lines.append(f"worst TNR: {min(TNR.items(), key=lambda x: x[1])}")
+
+    with open(filename, "w") as f:
+        for l in lines:
+            f.write(l + "\n")
+
+    
+DispConfussionMatrix(NET,"results1.txt")
+
+NET2 = mlp([40,32])
+
+NET2.load_weights()
+
+DispConfussionMatrix(NET2,"results2.txt")
+
+
+
+# NET.save_weights(dynamic=DYNAMIC)
 
 plt.show()
 

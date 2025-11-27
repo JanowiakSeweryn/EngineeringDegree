@@ -249,14 +249,14 @@ def PlayScene():
     LEVELS[current_level].PlayLevel(click)
     LEVELS[current_level].Draw_blocs(Window.renderer)
     LEVELS[current_level].FailedLevel() #check if current fails are enough to fail full level
-    if LEVELS[current_level].level_failed:
-        # LEVELS[current_level].disp(Window.renderer)
-        # LEVELS[current_level].PauseMusic()
-        LEVELS[current_level].level_failed = False
-        time.sleep(1)
-        RestartLevel()
-    if LEVELS[current_level].level_succeded:
-        level_completed = True
+    # if LEVELS[current_level].level_failed:
+    #     # LEVELS[current_level].disp(Window.renderer)
+    #     # LEVELS[current_level].PauseMusic()
+    #     LEVELS[current_level].level_failed = False
+    #     time.sleep(1)
+    #     RestartLevel()s
+    # if LEVELS[current_level].level_succeded:
+    #     level_completed = True
     
     ShowFrame()
 

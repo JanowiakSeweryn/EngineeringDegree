@@ -21,7 +21,6 @@ class Win:
         self.renderer = sdl2.ext.Renderer(self.window)
         self.events = sdl2.ext.get_events()
 
-
         self.window.show() 
         self.rect = sdl2.SDL_Rect(0,750,1000,200)
         self.color_1 = sdl2.ext.Color(255,0,0)

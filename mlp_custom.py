@@ -1,17 +1,24 @@
 #my own custom 
 
 import numpy as np
+import json
+import os
+import pickle
 
 from neuron import neuron
 
+module_dir = os.path.dirname(__file__)
+NET_FILENAME = os.path.join(module_dir,"mlp_custom_weights.pkl" )
+
 class mlp:
-    def __init__(self, hidden_layer_size):
+    def __init__(self, hidden_layer_size,adam=True):
 
         #NETWORK QUALITY PARAMETERS:
         self.batch_size = 100
         self.learning_rate = 0.001
         self.initial_learnig_rate = 0.1
         self.dynamic_learning_rate = False
+        self.layer_initialized = False
 
         self.gesture_detected_index = 0 #gestures detected
         
@@ -20,7 +27,13 @@ class mlp:
         self.hidden_layer_size = hidden_layer_size
         self.layer_w = []
         self.output = []
-
+        self.adam_optimizer = adam
+        self.beta1 = 0.9
+        self.beta2 = 0.999
+        self.epsilon = 1e-8
+        self.net_iteration = 0
+        self.m = 0
+        self.v = 0
 
         self.learning_rate_step = [] #visual the changes of learning rate
 
@@ -70,10 +83,15 @@ class mlp:
         p2 = self.epoch__max*0.65
         return 1/(1+np.exp(p1*(a - p2)))
     
-    def CrossEntropyError(self,output, target):
-        eps = 1e-15
-        output = np.clip(output, eps, 1 - eps)
-        return -np.sum(target * np.log((self.softmax(output))))
+    # def CrossEntropyError(self,output, target):
+    #     eps = 1e-15
+    #     output = np.clip(output,eps,None)
+
+    #     return -np.sum(target * np.log((self.softmax(output))))
+    
+    def CrossEntropyError(self, logits, target):
+        probs = self.softmax(logits)
+        return -np.sum(target * np.log(probs + 1e-15))
 
     def softmax(self,array):
 
@@ -85,6 +103,7 @@ class mlp:
 
     def Backpropagate(self):
         
+        self.net_iteration +=1 
         a = self.learning_rate #learning rate
     
         layer_index = len(self.layers)
@@ -102,10 +121,33 @@ class mlp:
 
                     n_error.append(neuron.error)
 
+                    if self.adam_optimizer:
+                        for j in range(len(neuron.weights)):
+                            grad = neuron.error * neuron.inputs[j]
+                            neuron.v[j] = self.beta2 * neuron.v[j] + (1-self.beta2)*grad*grad
+                            neuron.m[j] = self.beta1 * neuron.m[j] + (1-self.beta1)*grad
+                            
+                            # Bias-corrected first and second moment estimates
+                            m_hat = neuron.m[j] / (1 - np.power(self.beta1, self.net_iteration))
+                            v_hat = neuron.v[j] / (1 - np.power(self.beta2, self.net_iteration))
+                            
+                            neuron.weights[j] -=  a * m_hat / (np.sqrt(v_hat) + self.epsilon)
+                        
+                        # Update bias with gradient
+                        bias_grad = neuron.error
+                        neuron.vbias = self.beta2 * neuron.vbias + (1 - self.beta2) * bias_grad * bias_grad
+                        neuron.mbias = self.beta1 * neuron.mbias + (1 - self.beta1) * bias_grad
+                        
+                        # Bias-corrected bias moment estimates
+                        mbias_hat = neuron.mbias / (1 - np.power(self.beta1, self.net_iteration))
+                        vbias_hat = neuron.vbias / (1 - np.power(self.beta2, self.net_iteration))
+                        
+                        neuron.bias -= a * mbias_hat / (np.sqrt(vbias_hat) + self.epsilon)
+                    else:
                         #update the weights of neuron 
-                    for j in range(len(neuron.weights)):
-                        neuron.weights[j] -=  a * neuron.error * neuron.inputs[j]
-                    neuron.bias -= a * neuron.error 
+                        for j in range(len(neuron.weights)):
+                            neuron.weights[j] -=  a * neuron.error * neuron.inputs[j]
+                        neuron.bias -= a * neuron.error 
                 
             
             else:
@@ -121,17 +163,41 @@ class mlp:
                     neuron.error = nerr_sum * neuron.reLu_dv(neuron.weights_sum)
                     n_error.append(neuron.error)
 
-                    #update the weights of neuron 
-                    for j in range(len(neuron.weights)):
-                        neuron.weights[j] -=  a * neuron.error * neuron.inputs[j]
-                    neuron.bias -= a * neuron.error 
-            
+                    if self.adam_optimizer:
+                        for j in range(len(neuron.weights)):
+                            grad = neuron.error * neuron.inputs[j]
+                            neuron.v[j] = self.beta2 * neuron.v[j] + (1-self.beta2)*grad*grad
+                            neuron.m[j] = self.beta1 * neuron.m[j] + (1-self.beta1)*grad
+
+                            # Bias-corrected first and second moment estimates
+                            m_hat = neuron.m[j] / (1 - np.power(self.beta1, self.net_iteration))
+                            v_hat = neuron.v[j] / (1 - np.power(self.beta2, self.net_iteration))
+
+                            neuron.weights[j] -=  a * m_hat / (np.sqrt(v_hat) + self.epsilon)
+                        
+                        # Update bias with gradient
+                        bias_grad = neuron.error
+                        neuron.vbias = self.beta2 * neuron.vbias + (1 - self.beta2) * bias_grad * bias_grad
+                        neuron.mbias = self.beta1 * neuron.mbias + (1 - self.beta1) * bias_grad
+                        
+                        # Bias-corrected bias moment estimates
+                        mbias_hat = neuron.mbias / (1 - np.power(self.beta1, self.net_iteration))
+                        vbias_hat = neuron.vbias / (1 - np.power(self.beta2, self.net_iteration))
+                        
+                        neuron.bias -= a * mbias_hat / (np.sqrt(vbias_hat) + self.epsilon)
+                    else:
+                        #update the weights of neuron 
+                        for j in range(len(neuron.weights)):
+                            neuron.weights[j] -=  a * neuron.error * neuron.inputs[j]
+                        neuron.bias -= a * neuron.error 
+
             full_neuron_errors.append(n_error)
 
     def rms(self,output,target):
         sum = 0
+        output = self.softmax(output)
         for i in range(len(output)):
-            sum = (output[i] - target[i])*(output[i] - target[i])
+            sum += (output[i] - target[i])*(output[i] - target[i])
 
         return sum/len(output)
     
@@ -156,54 +222,110 @@ class mlp:
 
     def Train(self,input_data,target_data,max_epoch,learning_rate):
         self.learning_rate = learning_rate
-        
-        self.init_layer_weights(input_data[0],target_data[0])
+
+        if not self.layer_initialized:
+            self.init_layer_weights(input_data[0],target_data[0])
+            self.layer_initialized = True
+
         self.epoch__max = max_epoch
         epoch = 0
         iter = 0
+        self.final_net_error = 0
+        self.Loss = []
 
         while epoch < self.epoch__max:
             
-            
+
+            loss = 0
+
             for b in range(self.batch_size):
+
 
                 if iter >= len(input_data): iter = 0
 
-                loss = []
                 self.ouput_errors = []
                 self.target = target_data[iter]
                 self.input = input_data[iter]
 
                 self.predict()
 
-                for j in range(len(self.target)):
-                    self.ouput_errors.append(self.output[j] - self.target[j])
+                probs = self.softmax(self.output)
+                self.ouput_errors = probs - self.target
+
+                # for j in range(len(self.target)):
+                #     self.ouput_errors.append(self.output[j] - self.target[j])
 
                 self.Backpropagate()
-                loss.append(self.CrossEntropyError(self.output,self.target))
+    
+                loss += self.CrossEntropyError(self.output,self.target)
                 iter += 1
+
             
             self.epochs.append(epoch)
             epoch = epoch + 1
-            self.Loss.append(loss[-1])
+
+            self.Loss.append(loss/self.batch_size)
 
 
-            print(f'{self.ouput_errors} \tCE:{loss[-1]} \tepoch: {epoch}')
+            print(f'{self.ouput_errors} \tCE:{self.Loss[-1]} \tepoch: {epoch}')
         
         self.final_net_error = self.Loss[-1]
 
 
-       
+    def Validate(self,input_data,target_data,max_epoch,learning_rate):
+
+        self.learning_rate = learning_rate
+        self.epoch__max = max_epoch
+        epoch = 0
+        iter = 0
+
+        self.epochs.clear()
+        self.ouput_errors.clear()
+        self.Loss.clear()
+
+        while epoch < self.epoch__max:
+            
+            for b in range(self.batch_size):
+                
+                loss = 0
+                if iter >= len(input_data): iter = 0
+
+                self.ouput_errors = []
+                self.target = target_data[iter]
+                self.input = input_data[iter]
+
+                self.predict()
+
+                # for j in range(len(self.target)):
+                #     self.ouput_errors.append(self.output[j] - self.target[j])
+                probs = self.softmax(self.output)
+                self.ouput_errors = probs - self.target
+                
+                self.Backpropagate()
+                loss += self.CrossEntropyError(self.output,self.target)
+                iter += 1
+            
+            self.epochs.append(epoch)
+            epoch = epoch + 1
+            self.Loss.append(loss/self.batch_size)
 
 
+            print(f'{self.ouput_errors} \tCE:{self.Loss[-1]} \tepoch: {epoch}')
         
+        self.final_net_error = self.Loss[-1]
 
 
-    
+    def save_weights(self, filename=NET_FILENAME):
+          
+        with open(filename, 'wb') as f:
+            pickle.dump(self.layers, f)
         
-
-
-
-
-
+        print(f"Network weights saved to {filename}")
     
+    def load_weights(self, filename=NET_FILENAME):
+        with open(filename, 'rb') as f:
+            network_data = pickle.load(f)
+
+        # self.layer_initialized = True
+        self.layers = network_data
+     

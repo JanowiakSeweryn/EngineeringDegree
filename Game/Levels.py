@@ -5,6 +5,7 @@ LEVELS_DICT = {
     'Level1' : "remastered1.wav",
     'Level2' : "diddy.mp3",
     'Level3' : "CarTrouble.mp3",
+    'Level4' : "CarTrouble.mp3",
 }
 
 

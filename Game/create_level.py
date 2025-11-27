@@ -3,7 +3,7 @@ import time
 from level_class import LevelClass
 
 
-LEVEL_NAME = "Level3"
+LEVEL_NAME = "Level4"
 LEVEL_SONG = "CarTrouble.mp3"
 
 #level dificulty 
@@ -11,7 +11,7 @@ LEVEL_SONG = "CarTrouble.mp3"
 #it number of additional frames to to "threshould" the level 
 #read more at README code
 
-LEVEL_EASEALITY = 10
+LEVEL_EASEALITY = 15
 song_file = f"sound/{LEVEL_SONG}"
 
 Level = LevelClass(song_file.encode("utf-8"),f"levels/{LEVEL_NAME}.json")
@@ -37,7 +37,6 @@ def Create_Level():
     Level.SetLevel(click)
 
 Window.run = True
-
 
 
     
