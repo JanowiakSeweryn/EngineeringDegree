@@ -8,7 +8,6 @@ import math
 import json
 import os
 import random
-import re
 
 #every time when adding/removing gesture add set to true
 #after that set to False if you want fast way of runnng other programs

@@ -11,10 +11,10 @@ module_dir = os.path.dirname(__file__)
 NET_FILENAME = os.path.join(module_dir,"mlp_custom_weights.pkl" )
 
 class mlp:
-    def __init__(self, hidden_layer_size,adam=True):
+    def __init__(self, hidden_layer_size, solver="adam"):
 
         #NETWORK QUALITY PARAMETERS:
-        self.batch_size = 100
+        self.batch_size = 512
         self.learning_rate = 0.001
         self.initial_learnig_rate = 0.1
         self.dynamic_learning_rate = False
@@ -27,7 +27,7 @@ class mlp:
         self.hidden_layer_size = hidden_layer_size
         self.layer_w = []
         self.output = []
-        self.adam_optimizer = adam
+        self.solver = solver
         self.beta1 = 0.9
         self.beta2 = 0.999
         self.epsilon = 1e-8
@@ -121,7 +121,7 @@ class mlp:
 
                     n_error.append(neuron.error)
 
-                    if self.adam_optimizer:
+                    if self.solver == "adam":
                         for j in range(len(neuron.weights)):
                             grad = neuron.error * neuron.inputs[j]
                             neuron.v[j] = self.beta2 * neuron.v[j] + (1-self.beta2)*grad*grad
@@ -146,8 +146,21 @@ class mlp:
                     else:
                         #update the weights of neuron 
                         for j in range(len(neuron.weights)):
-                            neuron.weights[j] -=  a * neuron.error * neuron.inputs[j]
-                        neuron.bias -= a * neuron.error 
+                             
+                            grad = neuron.error * neuron.inputs[j]
+
+                            if self.solver != "gd": clip_value = 1
+                            else: clip_value = 10
+                                # clip grad
+                            if grad > clip_value: grad = clip_value
+                            if grad < -clip_value: grad = -clip_value
+
+                            neuron.weights[j] -=  a * grad
+
+                            neuron.weights[j] -=  a * grad
+                        bias_grad = neuron.error
+                        bias_grad = max(min(bias_grad, clip_value), -clip_value)
+                        neuron.bias -= a * bias_grad
                 
             
             else:
@@ -163,7 +176,7 @@ class mlp:
                     neuron.error = nerr_sum * neuron.reLu_dv(neuron.weights_sum)
                     n_error.append(neuron.error)
 
-                    if self.adam_optimizer:
+                    if self.solver == "adam":
                         for j in range(len(neuron.weights)):
                             grad = neuron.error * neuron.inputs[j]
                             neuron.v[j] = self.beta2 * neuron.v[j] + (1-self.beta2)*grad*grad
@@ -188,8 +201,19 @@ class mlp:
                     else:
                         #update the weights of neuron 
                         for j in range(len(neuron.weights)):
-                            neuron.weights[j] -=  a * neuron.error * neuron.inputs[j]
-                        neuron.bias -= a * neuron.error 
+                            
+                            grad = neuron.error * neuron.inputs[j]
+                            if self.solver != "gd":
+                                clip_value = 1
+                                # clip grad
+                                if grad > clip_value: grad = clip_value
+                                if grad < -clip_value: grad = -clip_value
+
+                            neuron.weights[j] -=  a * grad
+
+                        bias_grad = neuron.error
+                        if self.solver != "gd": bias_grad = max(min(bias_grad, clip_value), -clip_value)
+                        neuron.bias -= a * bias_grad
 
             full_neuron_errors.append(n_error)
 
@@ -223,6 +247,9 @@ class mlp:
     def Train(self,input_data,target_data,max_epoch,learning_rate):
         self.learning_rate = learning_rate
 
+        #when solver is gd (gradiend descen) we analize all of the data per epoch
+        if self.solver == "gd": self.batch_size = len(input_data)
+
         if not self.layer_initialized:
             self.init_layer_weights(input_data[0],target_data[0])
             self.layer_initialized = True
@@ -232,6 +259,7 @@ class mlp:
         iter = 0
         self.final_net_error = 0
         self.Loss = []
+        self.epochs.clear()
 
         while epoch < self.epoch__max:
             
@@ -280,7 +308,6 @@ class mlp:
         iter = 0
 
         self.epochs.clear()
-        self.ouput_errors.clear()
         self.Loss.clear()
 
         while epoch < self.epoch__max:
@@ -301,7 +328,7 @@ class mlp:
                 probs = self.softmax(self.output)
                 self.ouput_errors = probs - self.target
                 
-                self.Backpropagate()
+                # self.Backpropagate()
                 loss += self.CrossEntropyError(self.output,self.target)
                 iter += 1
             
@@ -309,10 +336,30 @@ class mlp:
             epoch = epoch + 1
             self.Loss.append(loss/self.batch_size)
 
-
             print(f'{self.ouput_errors} \tCE:{self.Loss[-1]} \tepoch: {epoch}')
         
         self.final_net_error = self.Loss[-1]
+
+        
+
+    def get_acc(self,input_data,target_data):
+
+        y_true = []
+        y_pred = []
+
+        tp = 0
+        tn = 0
+        for x,y in zip(input_data,target_data):
+            self.input_change(x)
+            self.predict()
+
+            y_pred = np.argmax(self.softmax(self.output))
+            y_true = np.argmax(y)
+
+            if y_pred == y_true: tp += 1
+            else: tn += 1
+
+        return 100*tp/(tp+tn)
 
 
     def save_weights(self, filename=NET_FILENAME):

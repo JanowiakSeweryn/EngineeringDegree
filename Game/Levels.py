@@ -3,7 +3,7 @@ from level_class import LevelClass
 LEVELS_DICT = {
     #level name  #level songs:
     'Level1' : "remastered1.wav",
-    'Level2' : "diddy.mp3",
+    'Level2' : "swingtrap.wav",
     'Level3' : "CarTrouble.mp3",
     'Level4' : "CarTrouble.mp3",
 }

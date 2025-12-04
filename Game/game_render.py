@@ -104,7 +104,7 @@ ClickButton = False
 
 current_gest_dynamic = None
 
-
+#this funcion  run in diffrient 
 def gest_detect():
     global current_gest 
     global current_frame
@@ -129,6 +129,7 @@ def gest_detect():
 
         result = Clasifier.clasify()
         current_gest = result
+    
         res_frame = Clasifier.frame
         current_frame = res_frame
 
@@ -186,7 +187,10 @@ def ShowFrame():
 
 #displays window 
     if current_frame is not None:
+        rect_coords = Clasifier.detector.draw_hand_rect(current_frame)
         cv2.imshow("camera",current_frame)
+        Clasifier.detector.display_text(current_frame, current_gest, rect_coords)
+
         cv2.waitKey(1)
 
 def SelectLevelScene():

@@ -22,7 +22,7 @@ class Win:
         self.events = sdl2.ext.get_events()
 
         self.window.show() 
-        self.rect = sdl2.SDL_Rect(0,750,1000,200)
+        self.rect = sdl2.SDL_Rect(0,750,WINDOW_WIDTH,150)
         self.color_1 = sdl2.ext.Color(255,0,0)
         self.color_2 = sdl2.ext.Color(0,255,0)
         self.iter = 0 

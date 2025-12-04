@@ -38,7 +38,6 @@ print(len(input_test))
 print(len(input_val))
 
 
-
 #retursn true positives, true negatives etc
 def TestTFPN(custom_net):
 
@@ -87,19 +86,24 @@ def get_predictions(custom_net):
         
 for i in range(1):
 
-    NET = mlp([40,32])
+    NET = mlp([40,32],solver="adam") 
+    # NET.batch_size=50
     NET.Train(input_train,target_train,500,0.001)
 
     print(len(NET.epochs),len(NET.Loss))
-
  
     plt.figure()
-    sns.lineplot(x = NET.epochs,y=NET.Loss)
-    # validation
-
-    NET.Train(input_val,target_val,500,0.001)
+    sns.lineplot(x = NET.epochs,y=NET.Loss, label='Train')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+  #   validation
+    NET.Validate(input_val,target_val,500,0.001)
     errors.append(NET.final_net_error)
-    sns.lineplot(x = NET.epochs,y=NET.Loss)
+
+    print(len(NET.epochs),len(NET.Loss))
+
+    sns.lineplot(x = NET.epochs,y=NET.Loss, label='Validation')
+    plt.legend()
 
 NET.save_weights()
 
@@ -150,6 +154,8 @@ def DispConfussionMatrix(custom_net,filename):
     plt.figure()
     sns.heatmap(df, annot=True, cmap="Blues",vmax=0.2*len(input_data)/(len(GESTURES)))
     plt.title("Performance Metrics per Class")
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
 
 
     lines.append(" ")
@@ -163,16 +169,17 @@ def DispConfussionMatrix(custom_net,filename):
         for l in lines:
             f.write(l + "\n")
 
-    
 DispConfussionMatrix(NET,"results1.txt")
 
-NET2 = mlp([40,32])
+# NET2 = mlp([40,32])
 
-NET2.load_weights()
+# NET2.load_weights()
 
-DispConfussionMatrix(NET2,"results2.txt")
+# DispConfussionMatrix(NET2,"results2.txt")
 
-
+print(f"acc for train: {NET.get_acc(input_train,target_train)}")
+print(f"acc for validation: {NET.get_acc(input_val,target_val)}")
+print(f"acc for testing: {NET.get_acc(input_test,target_test)}")
 
 # NET.save_weights(dynamic=DYNAMIC)
 

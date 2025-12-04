@@ -11,7 +11,6 @@ BLOCK_FALL_TIME = 45
 BLOCK_SPEED = int(600/BLOCK_FALL_TIME)
 BLOCK_REACT_TIME = 30 #0.5 half second to check the box
 
-
 class decoration:
     def __init__(self,color,x,y,width,height):
 
@@ -68,11 +67,11 @@ class decoration:
         return x- size, y-size, w+2*size, h+2*size 
 
         
-    def draw(self,renderer):
+    def draw(self,renderer,move=True):
         renderer.fill(self.rect2,self.color)
         if type(self.sprite) is not int:
             renderer.copy(self.sprite.texture,None,self.rect)
-        self.move()
+        if move: self.move()
 
 
 def get_sprite(filename,renderer):
