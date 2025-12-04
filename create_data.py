@@ -8,7 +8,7 @@
 #5 program automaticaly exit after compliting task
 GESTURE_NAME = "peace" 
 DATA_SIZE = 350
-ADDITIONAL_DATA_SIZE = 100 #if you want to add new data to existing gesture
+ADDITIONAL_DATA_SIZE = 200 #if you want to add new data to existing gesture
 
 #change it to false if you want to static gestures
 #change it to true if you want to save data for dynamic gestures
