@@ -4,7 +4,7 @@ from level_class import LevelClass
 
 
 LEVEL_NAME = "Level2"
-LEVEL_SONG = "CarTrouble.mp3"
+LEVEL_SONG = "swingtrap.wav"
 
 #level dificulty 
 #when level is very dynamic it requas LEVEL easablility to very small
