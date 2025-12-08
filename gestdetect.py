@@ -29,7 +29,7 @@ class gesture_detection:
 
     def __init__(self,dynamic=False):
 
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
         self.cap.set(cv2.CAP_PROP_FPS,60)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,WIN_WIDTH)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,WIN_HEIGHT)

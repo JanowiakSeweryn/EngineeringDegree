@@ -17,7 +17,7 @@ from get_data import GESTURES
 WIN_WIDTH = 480
 WIN_HEIGHT = 340
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
 cap.set(cv2.CAP_PROP_FPS,60)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH,WIN_WIDTH)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT,WIN_HEIGHT)
