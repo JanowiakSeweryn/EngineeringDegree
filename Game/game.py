@@ -46,6 +46,9 @@ def get_sceene_index():
 
     if Window.Event_trigger["Resume"] or Window.Event_trigger["selectlevel"]:
         change_scene = True
+    
+    if Window.Event_trigger.get("LevelSuccess", False) or Window.Event_trigger.get("LevelFailed", False):
+        change_scene = True
 
     if change_scene:
         current_index = scene_index
@@ -55,6 +58,8 @@ def get_sceene_index():
         if Window.Event_trigger["Pause"]: scene_index = "pausescene"
         if Window.Event_trigger["Resume"]: scene_index = "playscene"
         if Window.Event_trigger["selectlevel"]: scene_index = "selectlevelscene"
+        if Window.Event_trigger.get("LevelSuccess", False): scene_index = "levelsuccessscene"
+        if Window.Event_trigger.get("LevelFailed", False): scene_index = "levelfailedscene"
 
         if current_index == scene_index:
             b = prev_scene_index
@@ -62,8 +67,25 @@ def get_sceene_index():
             scene_index = b
         else:
             prev_scene_index = current_index
+        
+        # Apply fade transition only for specific scene changes:
+        # 1. Select level → Play level
+        # 2. Play level → Any menu (pause, success, failed, main)
+        apply_fade = False
+        
+        if current_index == "selectlevelscene" and scene_index == "playscene":
+            apply_fade = True
+        elif current_index == "playscene" and scene_index in ["pausescene", "levelsuccessscene", "levelfailedscene", "mainscene"]:
+            apply_fade = True
+        
+        if apply_fade:
+            # Perform fade transition (0.5 seconds, only affects main thread)
+            Window.FadeTransition(duration=0.5)
+        
+        # Reset level completion events after scene transition is processed
+        Window.Event_trigger["LevelSuccess"] = False
+        Window.Event_trigger["LevelFailed"] = False
             
-        time.sleep(0.1)
         change_scene = False
 
 def TriggerOptions(option):
@@ -88,13 +110,13 @@ def TriggerOptions(option):
 
 def Music_themes(index):
     
-    if index == "mainscene" or index == "selectlevelscene":
+    if index == "mainscene" or index == "selectlevelscene" or index == "levelsuccessscene":
         main_screen_theme.PlayMusic()
     else:
         main_screen_theme.StopMusic()
-               
+                
     
-    if index == "pausescene":
+    if index == "pausescene" or index == "levelfailedscene":
         menu_theme.PlayMusic()
     else:
         menu_theme.StopMusic()

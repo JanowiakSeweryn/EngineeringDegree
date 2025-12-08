@@ -42,7 +42,9 @@ class Win:
             "ClickButton" :False,
             "Return2Main": False ,
             "Resume" : False,
-            "selectlevel": False
+            "selectlevel": False,
+            "LevelSuccess": False,
+            "LevelFailed": False
         }
 
         self.blocks = []
@@ -115,10 +117,44 @@ class Win:
         else:
             return number
     
+    def FadeTransition(self, duration=0.5):
+        """
+        Perform a fade-out and fade-in transition.
+        duration: total duration of the fade effect in seconds (half for fade-out, half for fade-in)
+        """
+        fade_steps = 20  # Number of steps for the fade
+        fade_out_time = duration / 2
+        fade_in_time = duration / 2
+        step_time = fade_out_time / fade_steps
+        
+        # Fade to black
+        for i in range(fade_steps):
+            alpha = int((i / fade_steps) * 255)
+            self.renderer.clear(sdl2.ext.Color(0, 0, 0))
+            
+            # Draw a black overlay with increasing alpha
+            fade_rect = sdl2.SDL_Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+            fade_color = sdl2.ext.Color(0, 0, 0, alpha)
+            self.renderer.fill([fade_rect], fade_color)
+            
+            self.renderer.present()
+            time.sleep(step_time)
+        
+        # Fully black screen
+        self.renderer.clear(sdl2.ext.Color(0, 0, 0))
+        self.renderer.present()
+        time.sleep(0.1)
+        
+        # Fade from black (this happens after scene change in the caller)
+        # We'll return and let the new scene render, then fade in
+    
     def Reset_Events(self):
 
         for ev in self.Event_trigger:
-            self.Event_trigger[ev] = False
+            # Don't reset LevelSuccess and LevelFailed here - they need to persist 
+            # until scene transition happens in get_sceene_index()
+            if ev not in ["LevelSuccess", "LevelFailed"]:
+                self.Event_trigger[ev] = False
 
     
 

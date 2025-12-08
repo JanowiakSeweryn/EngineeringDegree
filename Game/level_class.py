@@ -60,6 +60,10 @@ class LevelClass:
         self.block_up.load_png("sprites/peace.png",renderer)
         self.block_left.load_png("sprites/zero.png",renderer)
         self.block_right.load_png("sprites/german_3.png",renderer)
+
+        self.CreateProgressBarr(4*150+100)
+        self.CreateHealhBar(renderer)
+
         print("PNG INITIALIZED")
 
     def Flash(self,renderer,frame):
@@ -127,6 +131,7 @@ class LevelClass:
     
     def FailedLevel(self):
         if self.fail_rate > self.fail_threshold:
+            print(f"LEVEL FAILED! fail_rate: {self.fail_rate} > fail_threshold: {self.fail_threshold}")
             self.level_failed = True
             self.fail_rate = 0
 
@@ -139,7 +144,10 @@ class LevelClass:
                 self.current_block = max(self.blocs,key=lambda d: d.rect.y)
             
             # if click != 0 and self.Level_play[self.level_index] != 0 :
-            if click != 0 and self.Level_play[self.level_index] != 0 and not self.current_block.checked:
+            # Check if block is in valid zone (bottom of block must be at least at y=750)
+            block_in_valid_zone = self.current_block.rect.y + self.current_block.rect.h >= 750
+            
+            if click != 0 and self.Level_play[self.level_index] != 0 and not self.current_block.checked and block_in_valid_zone:
                 if self.Level_play[self.level_index] == click :
                     self.Succeded = True
 
@@ -166,8 +174,11 @@ class LevelClass:
                 
             self.level_index += 1
         else:
+            # Level has reached the end (all frames played)
+            print(f"Level ended! fail_rate: {self.fail_rate}, fail_threshold: {self.fail_threshold}")
             if self.fail_rate < self.fail_threshold:
-                #succeded leve
+                #succeded level
+                print("LEVEL SUCCEEDED!")
                 self.level_succeded = True
     
     def ResetLevel(self):
@@ -208,27 +219,45 @@ class LevelClass:
         
     def Draw_blocs(self,renderer):
         self.Create_blocs()
+        self.ShowHealthBar(renderer)
 
 
         if self.Succeded:
             self.start_flash = True
 
-        # if self.start_flash:
-        #     self.Flash(renderer,self.flash_frame)
-        #     self.flash_frame += 1
-        
-        # if self.flash_frame > 20:
-        #     self.start_flash = False
-        #     self.flash_frame = 0
         
         self.Failed = False
         self.Succeded = False
+
+        self.ShowProgressBarr(700,renderer)
+
 
         for b in self.blocs:
             b.draw(renderer)
 
         self.Destroy_blocs()
+    
+    def CreateProgressBarr(self,progress_width):
+        self.bar =decoration(sdl2.ext.Color(155,155,155),150,20,progress_width,20)
+        self.progress_bar = decoration(sdl2.ext.Color(0,255,0),150,20,0,20)
+    
+    def CreateHealhBar(self,renderer):
+        self.health_number = round(self.fail_threshold)
+        self.health_bar = []
+        print(self.health_number)
+        for i in range(self.health_number):
+            self.health_bar.append(decoration(sdl2.ext.Color(255,0,0),1200,20+100*i,100,100))
+            self.health_bar[i].load_png("sprites/health.png",renderer)
 
+    def ShowHealthBar(self,renderer):
+        if self.Failed and len(self.health_bar) > 0: self.health_bar.pop()
+        for h in self.health_bar:
+            h.draw(renderer,move=False,draw_rect=False)
+    
+    def ShowProgressBarr(self,progress_width,renderer):
+        self.bar.draw(renderer,move=False)
+        self.progress_bar.rect2.w = int(progress_width*self.level_index/len(self.Level_play))
+        self.progress_bar.draw(renderer,move=False)
     
     def clean(self):
         mix.Mix_FreeChunk(self.sound)

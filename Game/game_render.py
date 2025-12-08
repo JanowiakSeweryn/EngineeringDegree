@@ -15,7 +15,7 @@ from sound import sound_play
 from animation import center_rect
 from Levels import LEVELS
 
-from options import MENU_OPTION,MAIN_SCREEN_OPTION,GESTURES_INPUT,SELECT_LEVEL_OPTION,OPENING_SCREEN_OPTION
+from options import MENU_OPTION,MAIN_SCREEN_OPTION,GESTURES_INPUT,SELECT_LEVEL_OPTION,OPENING_SCREEN_OPTION,LEVEL_SUCCESS_OPTION,LEVEL_FAILED_OPTION
 
 import cv2
 import time
@@ -41,6 +41,9 @@ Select_level_scene = menu(WINDOW_WIDTH,WINDOW_HEIGHT)
 
 opening_scene = menu(WINDOW_WIDTH,WINDOW_HEIGHT)
 opening_scene.render_option = False
+
+Level_success_scene = menu(WINDOW_WIDTH,WINDOW_HEIGHT)
+Level_failed_scene = menu(WINDOW_WIDTH,WINDOW_HEIGHT)
 
 #classifiers
 Clasifier = gesture_detection(dynamic=False)
@@ -89,6 +92,14 @@ def InitializeGame():
     opening_scene.LoadBackgroundPNG("sprites/opening_scene.png",Window.renderer)
     opening_scene.CreateOptions(OPENING_SCREEN_OPTION,Window.renderer)
     opening_scene.color = sdl2.ext.Color(255,255,255)
+
+    Level_success_scene.CreateOptions(LEVEL_SUCCESS_OPTION,Window.renderer)
+    Level_success_scene.color = sdl2.ext.Color(120,120,120)   
+    Level_success_scene.LoadText(Window.renderer,font)
+
+    Level_failed_scene.CreateOptions(LEVEL_FAILED_OPTION,Window.renderer)
+    Level_failed_scene.color = sdl2.ext.Color(120,120,120)   
+    Level_failed_scene.LoadText(Window.renderer,font)
 
     LoadLevels()
 
@@ -253,14 +264,19 @@ def PlayScene():
     LEVELS[current_level].PlayLevel(click)
     LEVELS[current_level].Draw_blocs(Window.renderer)
     LEVELS[current_level].FailedLevel() #check if current fails are enough to fail full level
-    # if LEVELS[current_level].level_failed:
-    #     # LEVELS[current_level].disp(Window.renderer)
-    #     # LEVELS[current_level].PauseMusic()
-    #     LEVELS[current_level].level_failed = False
-    #     time.sleep(1)
-    #     RestartLevel()s
-    # if LEVELS[current_level].level_succeded:
-    #     level_completed = True
+    
+    # Check for level success or failure
+    if LEVELS[current_level].level_failed:
+        print(">>> Triggering LevelFailed event in game_render")
+        LEVELS[current_level].PauseMusic()
+        Window.Event_trigger["LevelFailed"] = True
+        LEVELS[current_level].level_failed = False
+        
+    if LEVELS[current_level].level_succeded:
+        print(">>> Triggering LevelSuccess event in game_render")
+        LEVELS[current_level].PauseMusic()
+        Window.Event_trigger["LevelSuccess"] = True
+        LEVELS[current_level].level_succeded = False
     
     ShowFrame()
 
@@ -303,6 +319,34 @@ def MainSceneRender():
 def RestartLevel():
     LEVELS[current_level].ResetLevel()
     LEVELS[current_level].StopMusic()
+
+def LevelSuccessScene():
+    LEVELS[current_level].StopMusic()
+    
+    if not mix.Mix_Playing(3):
+        main_screen_theme.start_playing = True
+    
+    main_screen_theme.PlayMusic()
+    
+    Level_success_scene.Select_button(Window.Event_trigger["Left"],
+        Window.Event_trigger["Right"],
+        Window.Event_trigger["ClickButton"])
+    
+    Level_success_scene.Render(Window.renderer)
+
+def LevelFailedScene():
+    LEVELS[current_level].StopMusic()
+    
+    if not mix.Mix_Playing(4):
+        menu_theme.start_playing = True
+    
+    menu_theme.PlayMusic()
+    
+    Level_failed_scene.Select_button(Window.Event_trigger["Left"],
+        Window.Event_trigger["Right"],
+        Window.Event_trigger["ClickButton"])
+    
+    Level_failed_scene.Render(Window.renderer)
     
 
 def TriggerButtons(scene):
@@ -312,6 +356,8 @@ def TriggerButtons(scene):
     if scene == "pausescene": inp = Menu.Trigger_button()
     if scene == "selectlevelscene" : inp = Select_level_scene.Trigger_button()
     if scene == "openingscene" : inp = opening_scene.Trigger_button()
+    if scene == "levelsuccessscene" : inp = Level_success_scene.Trigger_button()
+    if scene == "levelfailedscene" : inp = Level_failed_scene.Trigger_button()
 
     # print(f"inp = {inp}")
     return inp
@@ -323,5 +369,7 @@ SCENES = {
         "playscene": PlayScene,
         "pausescene" : PauseSceneRender,
         "selectlevelscene" : SelectLevelScene,
+        "levelsuccessscene" : LevelSuccessScene,
+        "levelfailedscene" : LevelFailedScene,
         }
 

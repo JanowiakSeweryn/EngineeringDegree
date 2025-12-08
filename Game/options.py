@@ -31,6 +31,17 @@ OPENING_SCREEN_OPTION = [
     "return2home"
 ]
 
+LEVEL_SUCCESS_OPTION = [
+    "restart",      # replay level
+    "selectlevel",  # change level
+    "return2home"   # return to main screen
+]
+
+LEVEL_FAILED_OPTION = [
+    "restart",      # replay level
+    "return2home"   # return to main screen
+]
+
 lvlopt = []
 for lvl in LEVELS:
     lvlopt.append(lvl.filename)

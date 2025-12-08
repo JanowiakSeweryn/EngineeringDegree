@@ -6,9 +6,11 @@ HEIGH = 1080
 BLOCK_SIZE  = 150
 BAR_HEIGH = 750 + BLOCK_SIZE
 
-#how man pixels per 1 frame to block to get down to 
+#how many pixels per 1 frame for block to get down to the bar
 BLOCK_FALL_TIME = 45
-BLOCK_SPEED = int(600/BLOCK_FALL_TIME)
+# Calculate exact speed: block starts at y=0 and must reach BAR_HEIGH in BLOCK_FALL_TIME frames
+# This ensures perfect sync with the beat
+BLOCK_SPEED = (BAR_HEIGH - BLOCK_SIZE) / BLOCK_FALL_TIME
 BLOCK_REACT_TIME = 30 #0.5 half second to check the box
 
 class decoration:
@@ -67,8 +69,8 @@ class decoration:
         return x- size, y-size, w+2*size, h+2*size 
 
         
-    def draw(self,renderer,move=True):
-        renderer.fill(self.rect2,self.color)
+    def draw(self,renderer,move=True,draw_rect=True):
+        if draw_rect: renderer.fill(self.rect2,self.color)
         if type(self.sprite) is not int:
             renderer.copy(self.sprite.texture,None,self.rect)
         if move: self.move()
