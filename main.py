@@ -8,9 +8,10 @@ from hand import cv2
 from get_data import get_landmarks_input 
 from get_data import read_json,split_data
 
-if CUSTOM_NET :from mlp_custom import mlp 
-else: from torch_nn import mlp #use torch #use my own neural network
+# if CUSTOM_NET :from mlp_custom import mlp 
+# else: from torch_nn import mlp #use torch #use my own neural network
 
+from knn_classifier import mlp 
 #gestures name
 from get_data import GESTURES 
 
