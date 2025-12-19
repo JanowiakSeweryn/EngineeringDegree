@@ -36,17 +36,34 @@ class HandDetect:
 
         return frame
     
-    def handlm_Pos(self):
+    def handlm_Pos(self, mirror=False):
+        """
+        Get hand landmark positions
         
+        Parameters:
+        - mirror: If True, mirror left hand landmarks to match right hand orientation.
+                 If False, preserve original handedness (useful for distinguishing left/right thumb gestures)
+        """
         #1 | 2 / 21 list cointains a landmark positions
         hand_landmark_pos = []
         iter = 0
         if self.results.multi_hand_landmarks:
-            for handLms in self.results.multi_hand_landmarks:
+            for hand_idx, handLms in enumerate(self.results.multi_hand_landmarks):
                 lm_pos = []
                 iter = iter+1
+                
+                # Check if this is a left hand
+                is_left_hand = False
+                if self.results.multi_handedness and mirror:
+                    handedness = self.results.multi_handedness[hand_idx]
+                    # MediaPipe returns "Left" or "Right" from the user's perspective
+                    if handedness.classification[0].label == "Left":
+                        is_left_hand = True
+                
                 for id,lm in enumerate(handLms.landmark):
-                    lm_pos = (id, lm.x,lm.y)
+                    # Mirror x-coordinate for left hand only if mirror=True
+                    x_coord = 1.0 - lm.x if is_left_hand else lm.x
+                    lm_pos = (id, x_coord, lm.y)
                     hand_landmark_pos.append(lm_pos)
     
         return hand_landmark_pos

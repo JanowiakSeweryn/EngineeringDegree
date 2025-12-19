@@ -72,49 +72,29 @@ class gesture_detection:
 
 
         if len(data_1) > 0 and not self.dynamic :
-
+            # First pass: classify without mirroring
             self.NET.input_change(get_landmarks_input(data_1,self.dynamic))
             self.NET.predict()
+            
+            detected_gesture = GESTURES[self.NET.gesture_detected_index]
+            
+            # If the gesture is NOT a thumb gesture, re-classify with mirroring for left hand
+            if detected_gesture not in ["left_thumb", "right_thumb"]:
+                # Get landmarks with mirroring enabled
+                data_1_mirrored = self.detector.handlm_Pos(mirror=True)
+                
+                if len(data_1_mirrored) > 0:
+                    # Re-classify with mirrored landmarks
+                    self.NET.input_change(get_landmarks_input(data_1_mirrored, self.dynamic))
+                    self.NET.predict()
+                    detected_gesture = GESTURES[self.NET.gesture_detected_index]
 
             # NET.disp() #displays softmax of full output for all gestures 
 
             # print(GESTURES[self.NET.gesture_detected_index]) #displays name of the gesture
             
-            return GESTURES[self.NET.gesture_detected_index]
+            return detected_gesture
         
-        else:
-            if not len(data_1) > 30:
-                if self.iter_dynamic <= 30:
-                    for d in self.prev_data:
-                        self.iter_dynamic +=1 
-                        self.data_dynamic.append(d)
-                else:
-                    self.iter_dynamic -=1
-                    self.data_dynamic = self.data_dynamic[42:]
-
-
-            if len(data_1) > 30 and self.data_dynamic:
-                
-                if self.iter_dynamic <=30:
-                    self.iter_dynamic +=1
-                    self.prev_data = data_1
-                    for d in data_1:
-                        self.data_dynamic.append(d)
-
-                else:
-                    self.data_dynamic = self.data_dynamic[42,:]
-                    self.iter_dynamic -=1
-    
-                if len(self.data_dynamic) > 42*FRAMES_DG:
-                    self.NET.input_change(get_landmarks_input(self.data_dynamic))
-                    self.NET.predict()
-
-                    # NET.disp() #displays softmax of full output for all gestures 
-
-                    print(DYNAMIC_GESTURES[self.NET.gesture_detected_index]) #displays name of the gesture
-                    
-                    return DYNAMIC_GESTURES[self.NET.gesture_detected_index]
-            
             # else:
             #     self.NET.input_change(get_landmarks_input(data_1))
             #     self.NET.predict()
