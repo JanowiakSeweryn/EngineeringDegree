@@ -86,7 +86,7 @@ def get_predictions(custom_net):
         
 for i in range(1):
 
-    NET = mlp([40,32],solver="adam") 
+    NET = mlp([30,],solver="adam") 
     # NET.batch_size=50
     NET.Train(input_train,target_train,500,0.001)
 

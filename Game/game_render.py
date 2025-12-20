@@ -111,6 +111,7 @@ prevframe_gest = None
 gest = None
 current_frame = None
 ClickButton = False
+camera_fps = 0  # Global variable to track camera FPS
 
 
 current_gest_dynamic = None
@@ -123,6 +124,7 @@ def gest_detect():
     global prevframe_gest
     global ClickButton
     global current_gest_dynamic
+    global camera_fps
 
     tick_start = 0
     tick_time = 0
@@ -156,6 +158,10 @@ def gest_detect():
                     GESTURES_INPUT[g] = True
         
         tick_time = time.perf_counter() - tick_start
+        
+        # Calculate FPS (camera refresh rate)
+        if tick_time > 0:
+            camera_fps = 1.0 / tick_time
 
         # print(current_gest_dynamic)
 
@@ -199,6 +205,12 @@ def ShowFrame():
 #displays window 
     if current_frame is not None:
         rect_coords = Clasifier.detector.draw_hand_rect(current_frame)
+        
+        # Display FPS on camera frame
+        fps_text = f"FPS: {camera_fps:.1f}"
+        cv2.putText(current_frame, fps_text, (10, 30), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        
         cv2.imshow("camera",current_frame)
         Clasifier.detector.display_text(current_frame, current_gest, rect_coords)
 

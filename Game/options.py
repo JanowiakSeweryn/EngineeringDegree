@@ -22,7 +22,6 @@ MENU_OPTION = [
 ]
 
 MAIN_SCREEN_OPTION = [
-    "play" ,
     "selectlevel",
     "exit"
 ]
