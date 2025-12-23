@@ -1,6 +1,6 @@
 #uncomment one of the following :
-# from torch_nn import mlp #use torch 
-from mlp_custom import mlp #use my own neural network
+from torch_nn import mlp #use torch 
+# from mlp_custom import mlp #use my own neural network
 
 
 #media pipe class to detect hand
@@ -18,8 +18,8 @@ from get_data import DYNAMIC_GESTURES
 import os 
 
 
-WIN_WIDTH = 315
-WIN_HEIGHT = 240
+WIN_WIDTH = 256
+WIN_HEIGHT = 256
 
 FRAMES_DG = 30
 
@@ -29,7 +29,8 @@ class gesture_detection:
 
     def __init__(self,dynamic=False):
 
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(2,cv2.CAP_V4L2)
+
         self.cap.set(cv2.CAP_PROP_FPS,60)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,WIN_WIDTH)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,WIN_HEIGHT)
@@ -42,8 +43,8 @@ class gesture_detection:
         self.prev_data = []
 
         input,target = read_json()
-        self.NET = mlp([40,32])
-        # self.NET.create_layers(len(input[0]),len(target[0]) )
+        self.NET = mlp([30,35,30])
+        self.NET.create_layers(len(input[0]),len(target[0]) )
         self.NET.load_weights()
 
         # self.NET.Train(input,target,150,0.01)
@@ -55,10 +56,20 @@ class gesture_detection:
         data_1 = []
         if frame is None:
             self.ret, self.frame = self.cap.read()
+            
+            # Check if frame was captured successfully
+            if not self.ret or self.frame is None:
+                print("Warning: Failed to capture frame from camera")
+                return None
+            
             src = cv2.flip(self.frame,1)
             self.frame = src
             self.frame = self.detector.findfinger(self.frame)
         else:
+            # Check if provided frame is valid
+            if frame is None:
+                print("Warning: Provided frame is None")
+                return None
             self.frame = self.detector.findfinger(frame)
         
         # rect_coords = self.detector.draw_hand_rect(frame)
@@ -68,7 +79,6 @@ class gesture_detection:
         data_1 = self.detector.handlm_Pos()
 
         # self.detector.display_text(frame, GESTURES[self.NET.gesture_detected_index], rect_coords)
-
 
 
         if len(data_1) > 0 and not self.dynamic :
@@ -81,53 +91,10 @@ class gesture_detection:
             # print(GESTURES[self.NET.gesture_detected_index]) #displays name of the gesture
             
             return GESTURES[self.NET.gesture_detected_index]
-        
         else:
-            if not len(data_1) > 30:
-                if self.iter_dynamic <= 30:
-                    for d in self.prev_data:
-                        self.iter_dynamic +=1 
-                        self.data_dynamic.append(d)
-                else:
-                    self.iter_dynamic -=1
-                    self.data_dynamic = self.data_dynamic[42:]
+            return "hand_flipped"
 
-
-            if len(data_1) > 30 and self.data_dynamic:
-                
-                if self.iter_dynamic <=30:
-                    self.iter_dynamic +=1
-                    self.prev_data = data_1
-                    for d in data_1:
-                        self.data_dynamic.append(d)
-
-                else:
-                    self.data_dynamic = self.data_dynamic[42,:]
-                    self.iter_dynamic -=1
-    
-                if len(self.data_dynamic) > 42*FRAMES_DG:
-                    self.NET.input_change(get_landmarks_input(self.data_dynamic))
-                    self.NET.predict()
-
-                    # NET.disp() #displays softmax of full output for all gestures 
-
-                    print(DYNAMIC_GESTURES[self.NET.gesture_detected_index]) #displays name of the gesture
                     
-                    return DYNAMIC_GESTURES[self.NET.gesture_detected_index]
-            
-            # else:
-            #     self.NET.input_change(get_landmarks_input(data_1))
-            #     self.NET.predict()
-
-            #     # NET.disp() #displays softmax of full output for all gestures 
-
-            #     print(GESTURES[self.NET.gesture_detected_index]) #displays name of the gesture
-                
-            #     return GESTURES[self.NET.gesture_detected_index]
-
-
-        
-        
     def destroy_cap(self):
         self.cap.release()
         cv2.destroyAllWindows()

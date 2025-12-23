@@ -1,4 +1,4 @@
-from knn_classifier import mlp  # KNN classifier with mlp interface
+from knn_classifier import ml_model  # KNN classifier with mlp interface
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -89,7 +89,7 @@ best_acc = 0
 
 print("\n=== Testing different k values ===")
 for k in k_values:
-    NET = mlp(hidden_sizes=k, solver="adam")  # k is passed as hidden_sizes
+    NET = ml_model(hidden_sizes=k, solver="adam")  # k is passed as hidden_sizes
     NET.Train(input_train, target_train, 1, 0.001)  # KNN doesn't need epochs or lr
     
     # Validate
@@ -104,7 +104,7 @@ print(f"\nBest k value: {best_k} with accuracy: {best_acc:.2f}%")
 
 # Train final model with best k
 print(f"\n=== Training final KNN model with k={best_k} ===")
-NET = mlp(hidden_sizes=best_k, solver="adam")
+NET = ml_model(hidden_sizes=best_k, solver="adam")
 NET.Train(input_train, target_train, 500, 0.001)
 
 print(f"Epochs: {len(NET.epochs)}, Loss history: {len(NET.Loss)}")
@@ -170,11 +170,14 @@ def DispConfusionMatrix(custom_net, filename):
 
     df = pd.DataFrame(cm, index=GESTURES, columns=GESTURES)
 
-    plt.figure()
+    plt.figure(figsize=(12, 10))
     sns.heatmap(df, annot=True, cmap="Blues", fmt='d', vmax=0.2 * len(input_data) / (len(GESTURES)))
     plt.title(f"KNN Confusion Matrix (k={NET.k})")
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
+    plt.xticks(rotation=45, ha='right')
+    plt.yticks(rotation=0)
+    plt.tight_layout()
 
     lines.append(" ")
     print()

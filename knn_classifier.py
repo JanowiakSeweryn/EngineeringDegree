@@ -6,7 +6,7 @@ module_dir = os.path.dirname(__file__)
 KNN_FILENAME = os.path.join(module_dir, "knn_weights.pkl")
 
 
-class mlp:
+class ml_model:
     """
     K-Nearest Neighbors classifier with the same interface as torch_nn and mlp_custom.
     Note: The class is named 'mlp' to maintain compatibility with existing code.

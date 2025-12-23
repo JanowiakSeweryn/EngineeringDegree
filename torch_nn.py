@@ -79,8 +79,8 @@ class mlp(nn.Module):
             loss.backward()
             optimizer.step()
 
-            if (epoch + 1) % 10 == 0 or epoch == 0:
-                print(f"Epoch [{epoch+1}/{max_epoch}], Loss: {loss.item():.4f}")
+            # if (epoch + 1) % 10 == 0 or epoch == 0:
+                # print(f"Epoch [{epoch+1}/{max_epoch}], Loss: {loss.item():.4f}")
 
             self.epochs.append(epoch)
             self.loss_history.append(loss.item())
@@ -107,8 +107,8 @@ class mlp(nn.Module):
                 outputs = self(input_tensor)
                 loss = criterion(outputs, target_tensor)
 
-                if (epoch + 1) % 10 == 0 or epoch == 0:
-                    print(f"Validation Epoch [{epoch+1}/{max_epoch}], Loss: {loss.item():.4f}")
+                # if (epoch + 1) % 10 == 0 or epoch == 0:
+                #     print(f"Validation Epoch [{epoch+1}/{max_epoch}], Loss: {loss.item():.4f}")
 
                 self.epochs.append(epoch)
                 self.loss_history.append(loss.item())

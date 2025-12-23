@@ -84,7 +84,6 @@ class menu:
     
     def animate_intro(self):
         self.intro_rect = intro_animation(self.intro_rect)
-    
 
 
     def Select_button(self,event_left,event_right,event_exe):
