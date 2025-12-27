@@ -1,6 +1,6 @@
 #uncomment one of the following :
 
-from torch_nn import mlp #use torch 
+from torch_nn import ml_model #use torch 
 # from mlp_custom import mlp #use my own neural network
 
 import seaborn as sns
@@ -114,7 +114,7 @@ solvers = ["adam"]
 #         print(f"validate error: {NET.final_net_error}")
 
 
-NET = mlp([30,35,30],solver="adam") 
+NET = ml_model([30,35,30],solver="adam") 
 # NET.batch_size=50
 NET.Train(input_train,target_train,500,0.001)
 errors_train.append(NET.final_net_error)

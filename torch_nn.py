@@ -11,9 +11,9 @@ NET_FILENAME = os.path.join(module_dir,"weights.pth" )
 NET_FILENAME_DYNAMIC =  os.path.join(module_dir,"weights_dynamics.pth" )
 
 
-class mlp(nn.Module):
+class ml_model(nn.Module):
     def __init__(self, hidden_sizes, solver="adam"):
-        super(mlp, self).__init__()
+        super(ml_model, self).__init__()
         
         self.gesture_detected_index = 0
         self.output_size = 0

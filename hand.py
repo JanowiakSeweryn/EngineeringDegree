@@ -35,6 +35,12 @@ class HandDetect:
                     self.mpDraw.draw_landmarks(frame,handLms,self.handsMp.HAND_CONNECTIONS)
 
         return frame
+
+    def get_handedness(self):
+        if self.results.multi_handedness:
+            for hand_handedness in self.results.multi_handedness:
+                return hand_handedness.classification[0].label
+        return None
     
     def handlm_Pos(self):
         

@@ -21,6 +21,7 @@ import cv2
 import time
 import sdl2
 import numpy as np
+from collections import deque
  
 import sdl2.sdlmixer as mix
 
@@ -115,10 +116,17 @@ prevframe_gest = None
 gest = None
 current_frame = None
 ClickButton = False
-prev_time = 0
-fps = 0
+
+prev_time = time.time()
+fps_history = deque(maxlen=30)  # Store last 30 frame times for averaging
+latancy_history = deque(maxlen=30) 
+latancy_camera_bc = 0
+latancy_camera_ac = 0
+avg_fps = 0
+    
 
 current_gest_dynamic = None
+
 
 #this funcion  run in diffrient 
 def gest_detect():
@@ -127,7 +135,11 @@ def gest_detect():
     global prev_gest
     global prevframe_gest
     global ClickButton
+    global avg_fps
+
     global current_gest_dynamic
+
+    global latancy_camera_bc 
 
     tick_start = 0
     tick_time = 0
@@ -140,7 +152,7 @@ def gest_detect():
     while(Window.run):
 
         tick_start = time.perf_counter()
-
+        latancy_camera_bc = tick_start
         prev_gest = current_gest
 
         result = Clasifier.clasify()
@@ -165,6 +177,9 @@ def gest_detect():
                     GESTURES_INPUT[g] = True
         
         tick_time = time.perf_counter() - tick_start
+        fps_history.append(tick_time)
+        avg_fps = len(fps_history) / sum(fps_history) if fps_history else 0
+
 
         # print(current_gest_dynamic)
 
@@ -203,29 +218,39 @@ def InitializeFrame():
 
 def ShowFrame():
     global prev_time
-    global fps
+    global fps_history
+    global latancy_camera_bc
+    global latancy_camera_ac
+    global avg_fps
+    latancy_camera = 0
     
     Window.Render_present()
     Window.Reset_Events()
 
     if current_frame is not None:
         rect_coords = Clasifier.detector.draw_hand_rect(current_frame)
+
         
-        # Calculate and display FPS
-        current_time = time.time()
-        if prev_time != 0:
-            fps = 1 / (current_time - prev_time)
-        prev_time = current_time
-        
-        # Display FPS on screen
-        fps_text = f"FPS: {int(fps)}"
+        avg_latancy = sum(latancy_history)/len(latancy_history)  if latancy_history else 0
+        latancy_text = f"Latency: {int(avg_latancy)} ms"
+
+        # Display averaged FPS on screen
+        fps_text = f"FPS: {int(avg_fps)}"
         cv2.putText(current_frame, fps_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 
                     1, (0, 255, 0), 2, cv2.LINE_AA)
         
+        cv2.putText(current_frame, latancy_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 
+                1, (255, 0, 0), 2, cv2.LINE_AA)
+        
         cv2.imshow("camera",current_frame)
+        latancy_camera_ac = time.perf_counter()
+
+        latancy_history.append((latancy_camera_ac - latancy_camera_bc)*1000)
+        
         Clasifier.detector.display_text(current_frame, current_gest, rect_coords)
 
         cv2.waitKey(1)
+
 
 def SelectLevelScene():
     global current_level
