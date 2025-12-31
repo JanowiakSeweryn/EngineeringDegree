@@ -2,6 +2,7 @@ ld directories
 /dist
 /Game/build
 /Gestures
+Gestures/
 
 # Python cache
 __pycache__/
