@@ -21,6 +21,7 @@ import cv2
 import time
 import sdl2
 import numpy as np
+from collections import deque
  
 import sdl2.sdlmixer as mix
 
@@ -33,6 +34,8 @@ frame = 0
 Window = Win()
 
 song_file = f"sound/{SONG}"
+
+global prev_
 
 #scenes:
 Menu = menu(WINDOW_WIDTH,WINDOW_HEIGHT)
@@ -86,17 +89,19 @@ def InitializeGame():
     
     Main_screen.LoadBackgroundPNG("sprites/main_screen.png",Window.renderer)
     Select_level_scene.CreateOptions(SELECT_LEVEL_OPTION,Window.renderer)
-    Select_level_scene.color = sdl2.ext.Color(150,150,0)
+    Select_level_scene.color = sdl2.ext.Color(120,120,120)
     Select_level_scene.LoadText(Window.renderer,font)
 
     opening_scene.LoadBackgroundPNG("sprites/opening_scene.png",Window.renderer)
     opening_scene.CreateOptions(OPENING_SCREEN_OPTION,Window.renderer)
     opening_scene.color = sdl2.ext.Color(255,255,255)
 
+    Level_success_scene.LoadBackgroundPNG("sprites/level_succeded.png",Window.renderer)
     Level_success_scene.CreateOptions(LEVEL_SUCCESS_OPTION,Window.renderer)
     Level_success_scene.color = sdl2.ext.Color(120,120,120)   
     Level_success_scene.LoadText(Window.renderer,font)
 
+    Level_failed_scene.LoadBackgroundPNG("sprites/level_failed.png",Window.renderer)
     Level_failed_scene.CreateOptions(LEVEL_FAILED_OPTION,Window.renderer)
     Level_failed_scene.color = sdl2.ext.Color(120,120,120)   
     Level_failed_scene.LoadText(Window.renderer,font)
@@ -113,8 +118,16 @@ current_frame = None
 ClickButton = False
 camera_fps = 0  # Global variable to track camera FPS
 
+prev_time = time.time()
+fps_history = deque(maxlen=30)  # Store last 30 frame times for averaging
+latancy_history = deque(maxlen=30) 
+latancy_camera_bc = 0
+latancy_camera_ac = 0
+avg_fps = 0
+    
 
 current_gest_dynamic = None
+
 
 #this funcion  run in diffrient 
 def gest_detect():
@@ -123,8 +136,12 @@ def gest_detect():
     global prev_gest
     global prevframe_gest
     global ClickButton
+    global avg_fps
+
     global current_gest_dynamic
     global camera_fps
+
+    global latancy_camera_bc 
 
     tick_start = 0
     tick_time = 0
@@ -132,16 +149,20 @@ def gest_detect():
 
     iter = 0
 
-    gest_inputs = ["fist_open","left_thumb","right_thumb","uk_3"]
+    gest_inputs = ["hand_open","left_thumb","right_thumb","uk_3"]
 
     while(Window.run):
 
         tick_start = time.perf_counter()
-
+        latancy_camera_bc = tick_start
         prev_gest = current_gest
 
         result = Clasifier.clasify()
-        current_gest = result
+        
+        # Only update current_gest if result is not None
+        if result is not None:
+            current_gest = result
+        # If result is None (camera failure), keep previous gesture
     
         res_frame = Clasifier.frame
         current_frame = res_frame
@@ -151,7 +172,7 @@ def gest_detect():
                 if prev_gest == current_gest: iter += tick_time
                 else: iter = 0
                 
-                if g == "fist_open" or g == "uk_3": tick_reaction_time = 1.2
+                if g == "hand_open" or g == "uk_3": tick_reaction_time = 1.2
                 else: tick_reaction_time = 0.8
                 if(iter > tick_reaction_time):
                     iter = 0
@@ -181,7 +202,7 @@ def CV_buttons():
         if GESTURES_INPUT[current_gest]:
     
             GESTURES_INPUT[current_gest] = False
-            if current_gest == "fist_open" : Window.Event_trigger["ClickButton"] = True
+            if current_gest == "hand_open" : Window.Event_trigger["ClickButton"] = True
             if current_gest == "left_thumb" : Window.Event_trigger["Left"] = True
             if current_gest == "right_thumb" : Window.Event_trigger["Right"] = True
             if current_gest == "uk_3" : Window.Event_trigger["Pause"] = True
@@ -199,10 +220,16 @@ def InitializeFrame():
     Window.Render_start()
 
 def ShowFrame():
+    global prev_time
+    global fps_history
+    global latancy_camera_bc
+    global latancy_camera_ac
+    global avg_fps
+    latancy_camera = 0
+    
     Window.Render_present()
     Window.Reset_Events()
 
-#displays window 
     if current_frame is not None:
         rect_coords = Clasifier.detector.draw_hand_rect(current_frame)
         
@@ -212,9 +239,14 @@ def ShowFrame():
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
         
         cv2.imshow("camera",current_frame)
+        latancy_camera_ac = time.perf_counter()
+
+        latancy_history.append((latancy_camera_ac - latancy_camera_bc)*1000)
+        
         Clasifier.detector.display_text(current_frame, current_gest, rect_coords)
 
         cv2.waitKey(1)
+
 
 def SelectLevelScene():
     global current_level
@@ -237,7 +269,7 @@ intro_theme.start_playing = True
 
 def OpeningScene():
     
-    if current_gest == "fist_open": 
+    if current_gest == "hand_open": 
         opening_scene.animate_intro()
         if not mix.Mix_Playing(5):
             intro_theme.start_playing = True
@@ -265,7 +297,7 @@ def PlayScene():
     if current_gest == "zero" or current_gest == "kon" : click = 1
     if current_gest == "peace" : click = 2
     if current_gest == "german_3" : click = 3
-    if current_gest == "fist_closed": click = 4
+    if current_gest == "hand_closed": click = 4
     
     if Window.Event_trigger["Left"] : click = 1
     if Window.Event_trigger["Up"] : click = 2
@@ -275,7 +307,7 @@ def PlayScene():
     LEVELS[current_level].PlayMusic()
     LEVELS[current_level].PlayLevel(click)
     LEVELS[current_level].Draw_blocs(Window.renderer)
-    LEVELS[current_level].FailedLevel() #check if current fails are enough to fail full level
+    LEVELS[current_level].FailedLevel(Window.renderer) #check if current fails are enough to fail full level
     
     # Check for level success or failure
     if LEVELS[current_level].level_failed:
