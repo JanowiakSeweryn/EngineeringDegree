@@ -11,9 +11,9 @@ NET_FILENAME = os.path.join(module_dir,"weights.pth" )
 NET_FILENAME_DYNAMIC =  os.path.join(module_dir,"weights_dynamics.pth" )
 
 
-class mlp(nn.Module):
+class ml_model(nn.Module):
     def __init__(self, hidden_sizes, solver="adam"):
-        super(mlp, self).__init__()
+        super(ml_model, self).__init__()
         
         self.gesture_detected_index = 0
         self.output_size = 0
@@ -79,8 +79,8 @@ class mlp(nn.Module):
             loss.backward()
             optimizer.step()
 
-            if (epoch + 1) % 10 == 0 or epoch == 0:
-                print(f"Epoch [{epoch+1}/{max_epoch}], Loss: {loss.item():.4f}")
+            # if (epoch + 1) % 10 == 0 or epoch == 0:
+                # print(f"Epoch [{epoch+1}/{max_epoch}], Loss: {loss.item():.4f}")
 
             self.epochs.append(epoch)
             self.loss_history.append(loss.item())
@@ -107,8 +107,8 @@ class mlp(nn.Module):
                 outputs = self(input_tensor)
                 loss = criterion(outputs, target_tensor)
 
-                if (epoch + 1) % 10 == 0 or epoch == 0:
-                    print(f"Validation Epoch [{epoch+1}/{max_epoch}], Loss: {loss.item():.4f}")
+                # if (epoch + 1) % 10 == 0 or epoch == 0:
+                #     print(f"Validation Epoch [{epoch+1}/{max_epoch}], Loss: {loss.item():.4f}")
 
                 self.epochs.append(epoch)
                 self.loss_history.append(loss.item())
