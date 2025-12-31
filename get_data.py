@@ -281,6 +281,16 @@ def read_json(dynamic = False):
     return input_data, target_data
 
 def split_data(input_data, target_data, train_size):
+
+
+    test_size = round(len(input_data)*train_size)
+    x_train = input_data[0:test_size]
+    x_test = input_data[test_size:len(input_data)]
+
+    y_train = target_data[0:test_size]
+    y_test = target_data[test_size:len(input_data)]
+
+    return x_train, y_train, x_test, y_test
     """
     Stratified split: ensures each class has the same proportion in train and test sets.
     Assumes target is one-hot encoded.
@@ -288,57 +298,58 @@ def split_data(input_data, target_data, train_size):
     
     
     # Convert to numpy arrays for easier manipulation
-    input_arr = np.array(input_data)
-    target_arr = np.array(target_data)
+    # input_arr = np.array(input_data)
+    # target_arr = np.array(target_data)
     
-    # Get class labels from one-hot encoded targets
-    class_labels = np.argmax(target_arr, axis=1)
-    unique_classes = np.unique(class_labels)
+    # # Get class labels from one-hot encoded targets
+    # class_labels = np.argmax(target_arr, axis=1)
+    # unique_classes = np.unique(class_labels)
     
-    x_train_list = []
-    y_train_list = []
-    x_test_list = []
-    y_test_list = []
+    # x_train_list = []
+    # y_train_list = []
+    # x_test_list = []
+    # y_test_list = []
     
-    # Split each class separately
-    for class_idx in unique_classes:
-        # Get indices for this class
-        class_mask = class_labels == class_idx
-        class_inputs = input_arr[class_mask]
-        class_targets = target_arr[class_mask]
+    # # Split each class separately
+    # for class_idx in unique_classes:
+    #     # Get indices for this class
+    #     class_mask = class_labels == class_idx
+    #     class_inputs = input_arr[class_mask]
+    #     class_targets = target_arr[class_mask]
         
-        # Calculate split point for this class
-        n_samples = len(class_inputs)
-        n_train = int(n_samples * train_size)
+    #     # Calculate split point for this class
+    #     n_samples = len(class_inputs)
+    #     n_train = int(n_samples * train_size)
         
-        # Split this class
-        x_train_list.append(class_inputs[:n_train])
-        y_train_list.append(class_targets[:n_train])
-        x_test_list.append(class_inputs[n_train:])
-        y_test_list.append(class_targets[n_train:])
+    #     # Split this class
+    #     x_train_list.append(class_inputs[:n_train])
+    #     y_train_list.append(class_targets[:n_train])
+    #     x_test_list.append(class_inputs[n_train:])
+    #     y_test_list.append(class_targets[n_train:])
     
-    # Combine all classes
-    x_train = np.vstack(x_train_list)
-    y_train = np.vstack(y_train_list)
-    x_test = np.vstack(x_test_list)
-    y_test = np.vstack(y_test_list)
+    # # Combine all classes
+    # x_train = np.vstack(x_train_list)
+    # y_train = np.vstack(y_train_list)
+    # x_test = np.vstack(x_test_list)
+    # y_test = np.vstack(y_test_list)
     
-    # Shuffle the combined data to mix classes
-    train_indices = np.random.permutation(len(x_train))
-    test_indices = np.random.permutation(len(x_test))
+    # # Shuffle the combined data to mix classes
+    # train_indices = np.random.permutation(len(x_train))
+    # test_indices = np.random.permutation(len(x_test))
     
-    x_train = x_train[train_indices]
-    y_train = y_train[train_indices]
-    x_test = x_test[test_indices]
-    y_test = y_test[test_indices]
+    # x_train = x_train[train_indices]
+    # y_train = y_train[train_indices]
+    # x_test = x_test[test_indices]
+    # y_test = y_test[test_indices]
     
-    # Convert back to lists
-    x_train = x_train.tolist()
-    y_train = y_train.tolist()
-    x_test = x_test.tolist()
-    y_test = y_test.tolist()
+    # # Convert back to lists
+    # x_train = x_train.tolist()
+    # y_train = y_train.tolist()
+    # x_test = x_test.tolist()
+    # y_test = y_test.tolist()
     
-    return x_train, y_train, x_test, y_test
+    # return x_train, y_train, x_test, y_test
+
 
 
 #UPDATE DATA SET 

@@ -12,7 +12,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, roc_curve, auc
 
 DYNAMIC = False  # for time gestures 
 
@@ -82,8 +82,53 @@ def get_predictions(custom_net):
     return y_true, y_pred
 
 
+def get_prediction_scores(custom_net):
+    y_true_onehot = []
+    y_scores = []
+    for x, y in zip(input_test, target_test):
+        custom_net.input_change(x)
+        probs = custom_net.predict()
+        
+        y_true_onehot.append(y)
+        y_scores.append(probs)
+
+    return np.array(y_true_onehot), np.array(y_scores)
+
+
+def PlotROCCurve(y_true, y_score, filename_img):
+    n_classes = len(GESTURES)
+    
+    # Compute ROC curve and ROC area for each class
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    
+    for i in range(n_classes):
+        fpr[i], tpr[i], _ = roc_curve(y_true[:, i], y_score[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+
+    # Plot all ROC curves
+    plt.figure(figsize=(10, 8))
+    colors = plt.cm.get_cmap('tab10')(np.linspace(0, 1, n_classes))
+    
+    for i, color in zip(range(n_classes), colors):
+        plt.plot(fpr[i], tpr[i], color=color, lw=2,
+                 label=f'ROC curve of {GESTURES[i]} (AUC = {roc_auc[i]:0.2f})')
+
+    plt.plot([0, 1], [0, 1], 'k--', lw=2, label="Random guessing")
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Multi-class ROC Curve - KNN')
+    plt.legend(loc="lower right")
+    plt.tight_layout()
+    plt.savefig(filename_img)
+    print(f"ROC curve saved to {filename_img}")
+
+
 # Test different k values
-k_values = [1, 3, 5, 7, 9, 11]
+k_values = [5]
 best_k = 5
 best_acc = 0
 
@@ -194,6 +239,10 @@ def DispConfusionMatrix(custom_net, filename):
 
 print("\n=== Generating Confusion Matrix ===")
 DispConfusionMatrix(NET, "knn_results.txt")
+
+print("\n=== Generating ROC Curve ===")
+y_true_oh, y_scores = get_prediction_scores(NET)
+PlotROCCurve(y_true_oh, y_scores, "knn_roc_curve.png")
 
 # Test loading weights
 # NET2 = mlp(hidden_sizes=best_k)
