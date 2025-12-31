@@ -238,7 +238,7 @@ def DispROC(custom_net):
                  label='ROC curve of {0} (area = {1:0.2f})'
                  ''.format(GESTURES[i], roc_auc[i]))
 
-    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+    plt.plot([0, 1], [0, 1], 'k--', lw=2, label="Random guessing")
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
