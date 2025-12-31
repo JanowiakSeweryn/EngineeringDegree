@@ -116,6 +116,7 @@ prevframe_gest = None
 gest = None
 current_frame = None
 ClickButton = False
+camera_fps = 0  # Global variable to track camera FPS
 
 prev_time = time.time()
 fps_history = deque(maxlen=30)  # Store last 30 frame times for averaging
@@ -138,6 +139,7 @@ def gest_detect():
     global avg_fps
 
     global current_gest_dynamic
+    global camera_fps
 
     global latancy_camera_bc 
 
@@ -177,9 +179,10 @@ def gest_detect():
                     GESTURES_INPUT[g] = True
         
         tick_time = time.perf_counter() - tick_start
-        fps_history.append(tick_time)
-        avg_fps = len(fps_history) / sum(fps_history) if fps_history else 0
-
+        
+        # Calculate FPS (camera refresh rate)
+        if tick_time > 0:
+            camera_fps = 1.0 / tick_time
 
         # print(current_gest_dynamic)
 
@@ -229,18 +232,11 @@ def ShowFrame():
 
     if current_frame is not None:
         rect_coords = Clasifier.detector.draw_hand_rect(current_frame)
-
         
-        avg_latancy = sum(latancy_history)/len(latancy_history)  if latancy_history else 0
-        latancy_text = f"Latency: {int(avg_latancy)} ms"
-
-        # Display averaged FPS on screen
-        fps_text = f"FPS: {int(avg_fps)}"
-        cv2.putText(current_frame, fps_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 
-                    1, (0, 255, 0), 2, cv2.LINE_AA)
-        
-        cv2.putText(current_frame, latancy_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 
-                1, (255, 0, 0), 2, cv2.LINE_AA)
+        # Display FPS on camera frame
+        fps_text = f"FPS: {camera_fps:.1f}"
+        cv2.putText(current_frame, fps_text, (10, 30), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
         
         cv2.imshow("camera",current_frame)
         latancy_camera_ac = time.perf_counter()

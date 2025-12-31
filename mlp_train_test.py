@@ -113,6 +113,9 @@ solvers = ["adam"]
 #         NET.Validate(input_val,target_val,max_epoch,lr)    
 #         print(f"validate error: {NET.final_net_error}")
 
+    NET = mlp([30,],solver="adam") 
+    # NET.batch_size=50
+    NET.Train(input_train,target_train,500,0.001)
 
 NET = ml_model([30,35,30],solver="adam") 
 # NET.batch_size=50

@@ -31,17 +31,7 @@ for arg in sys.argv[1:]:
         key, value = arg.split('=')
         args[key] = int(value)
 
-
-# WIN_WIDTH = args.get('width')
-# WIN_HEIGHT = args.get('height')
-
-# WIN_WIDTH = 640
-# WIN_HEIGHT = 480
-
-WIN_WIDTH = 256
-WIN_HEIGHT = 256
-
-cap = cv2.VideoCapture(0,cv2.CAP_V4L2)
+cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
 cap.set(cv2.CAP_PROP_FPS,60)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH,WIN_WIDTH)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT,WIN_HEIGHT)
