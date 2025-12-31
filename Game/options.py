@@ -15,6 +15,7 @@ OPTIONS = {
 }
 
 MENU_OPTION = [
+    "pause",
     "resume",
     "restart",
     "return2home"
@@ -37,7 +38,6 @@ LEVEL_SUCCESS_OPTION = [
 
 LEVEL_FAILED_OPTION = [
     "restart",      # replay level
-    "selectlevel",  # change level
     "return2home"   # return to main screen
 ]
 

@@ -1,9 +1,9 @@
 #uncomment one of the following :
-# from torch_nn import mlp as ml_model #use torch 
-from mlp_custom import mlp as ml_model #use my own neural network
-# from knn_classifier import ml_model
+# from torch_nn import mlp #use torch 
+from mlp_custom import mlp #use my own neural network
 
-# media pipe class to detect hand
+
+#media pipe class to detect hand
 from hand import HandDetect
 from hand import cv2
 
@@ -18,8 +18,8 @@ from get_data import DYNAMIC_GESTURES
 import os 
 
 
-WIN_WIDTH = 256
-WIN_HEIGHT = 256
+WIN_WIDTH = 315
+WIN_HEIGHT = 240
 
 FRAMES_DG = 30
 
@@ -42,8 +42,7 @@ class gesture_detection:
         self.prev_data = []
 
         input,target = read_json()
-        # self.NET = ml_model([30,35,30])
-        self.NET = ml_model([40,32])
+        self.NET = mlp([40,32])
         # self.NET.create_layers(len(input[0]),len(target[0]) )
         self.NET.load_weights()
 
@@ -56,20 +55,10 @@ class gesture_detection:
         data_1 = []
         if frame is None:
             self.ret, self.frame = self.cap.read()
-            
-            # Check if frame was captured successfully
-            if not self.ret or self.frame is None:
-                print("Warning: Failed to capture frame from camera")
-                return None
-            
             src = cv2.flip(self.frame,1)
             self.frame = src
             self.frame = self.detector.findfinger(self.frame)
         else:
-            # Check if provided frame is valid
-            if frame is None:
-                print("Warning: Provided frame is None")
-                return None
             self.frame = self.detector.findfinger(frame)
         
         # rect_coords = self.detector.draw_hand_rect(frame)
@@ -79,6 +68,7 @@ class gesture_detection:
         data_1 = self.detector.handlm_Pos()
 
         # self.detector.display_text(frame, GESTURES[self.NET.gesture_detected_index], rect_coords)
+
 
 
         if len(data_1) > 0 and not self.dynamic :

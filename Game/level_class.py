@@ -127,15 +127,13 @@ class LevelClass:
         self.Level_play = data["Level_pattern"]
         
         #number of failed blokcs to check to fail the level
-        self.fail_threshold = 0.01667*len(self.Level_play)*0.1 + 3
+        self.fail_threshold = 0.01667*len(self.Level_play)*0.1
     
-    def FailedLevel(self,renderer):
+    def FailedLevel(self):
         if self.fail_rate > self.fail_threshold:
             print(f"LEVEL FAILED! fail_rate: {self.fail_rate} > fail_threshold: {self.fail_threshold}")
             self.level_failed = True
             self.fail_rate = 0
-            self.CreateHealhBar(renderer)
-            
 
 
     def PlayLevel(self,click):
