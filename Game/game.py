@@ -21,8 +21,7 @@ from game_render import ShowFrame
 from game_render import TriggerButtons
 from game_render import RestartLevel
 
-from game_render import main_screen_theme,menu_theme,prev_time,fps_history
-    
+from game_render import main_screen_theme,menu_theme
 
 threading.Thread(target=gest_detect,daemon=True).start()
 
